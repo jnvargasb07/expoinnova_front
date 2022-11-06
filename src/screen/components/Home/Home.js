@@ -16,8 +16,10 @@ import {
   Dropdown
 } from "react-bootstrap";
 import AppUtil from '../../../AppUtil/AppUtil.js';
-import Moment from 'react-moment';
-import 'moment-timezone';
+
+import moment from "moment";
+import 'moment/locale/es';
+
 import { url } from "../services/api";
 
  class Home extends Component {
@@ -84,7 +86,7 @@ render() {
                   <Dropdown.Item href="#" onClick={this.toggleDelete} className="text-danger"><i className="fas fa-trash"></i>Eliminar</Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
-                <a className="text-decoration-none" href={`/home/fairdetail/${item.id}`}>
+                <a className="text-decoration-none" href={`/home/fairdetail/${item.id}?id=${item.id}`}>
 
                   <Card.Body>
                     <Row>
@@ -99,9 +101,9 @@ render() {
                   <Card.Footer>
                     <hr></hr>
                     <div className="stats">
-                      Fecha de inicio: <Moment fromNow>{item.star_date}</Moment>
+                      Fecha de inicio: {moment(item.star_date).fromNow()}
                       <br />
-                      Fecha de finalización: <Moment toNow>{item.end_date}</Moment>
+                      Fecha de finalización: {moment(item.end_date).toNow()}
 
                     </div>
                   </Card.Footer>

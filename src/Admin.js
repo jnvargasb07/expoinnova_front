@@ -1,5 +1,5 @@
 import React from "react";
-import { useLocation, Route, Routes } from "react-router-dom";
+import { useLocation, Route, Routes, useParams, useNavigate } from "react-router-dom";
 
 import AdminNavbar from "./screen/components/Layouts/Navbar";
 import Footer from "./screen/components/Layouts/Footer";
@@ -13,6 +13,9 @@ function Admin() {
 
   const location = useLocation();
   const mainPanel = React.useRef(null);
+    const navigation = useNavigate();
+    const params = useParams();
+    console.log(location);
   const getRoutes = (routes) => {
     return routes.map((prop, key) => {
 
@@ -61,7 +64,10 @@ function Admin() {
             <div className="content">
               <Routes>
               {getRoutes(routes)}
-                <Route path={'/fairdetail/:id'} element={<FairDetail />} />
+                <Route
+                  path={'/fairdetail/:id'}
+                  element={<FairDetail navigate={navigation} params={params} location={location}  />}
+            />
               </Routes>
             </div>
             <Footer />
