@@ -175,9 +175,6 @@ import { url, fairDescription } from "../services/api";
           }
         })
     }
-
-
-
   }
 
 render() {
@@ -218,7 +215,7 @@ render() {
                   <Dropdown.Item onClick={()=>this.toggleDelete(item.id)} className="text-danger"><i className="fas fa-trash"></i>Eliminar</Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
-                <a className="text-decoration-none" href={`/home/fairdetail/${item.id}?id=${item.id}`}>
+                <a className="text-decoration-none" href={`/home/fairdetail?id=${item.id}`}>
 
                   <Card.Body>
                     <Row>

@@ -4,15 +4,11 @@ import { useLocation, NavLink } from "react-router-dom";
 import { Nav } from "react-bootstrap";
 
 function Sidebar({ color, image, routes }) {
-
   const location = useLocation();
   const activeRoute = (routeName) => {
     console.log(location.pathname.indexOf(routeName), routeName);
     return location.pathname.indexOf(routeName) > -1 && "active";
-    
   };
-
-
   return (
     <div className="sidebar">
       <div

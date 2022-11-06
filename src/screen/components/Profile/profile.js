@@ -72,23 +72,13 @@ class Profile extends Component {
 
     let url_api = url+"users";
     let id = this.user.id;
-    let user;
-    if(this.state.form.password !== ''){
-      user = {
-        name:this.state.form.name,
-        email:this.state.form.email,
-        password:this.state.form.password
-      }
-    }else{
-      user = {
-        name:this.state.form.name,
-        email:this.state.form.email
-      }
+    let user = {
+      name:this.state.form.name,
+      email:this.state.form.email,
+      password:this.state.form.password
     }
 
     AppUtil.putAPI(url_api+'/'+id, user).then(response => {
-      console.log(response);
-      if(response.success){
       this.setState({
        error: true,
        errorMsg: "El usuario se actualizo exitosamente",
@@ -101,20 +91,6 @@ class Profile extends Component {
          color: ""
        });
      }, "4000");
-    }else{
-      this.setState({
-        error: true,
-        errorMsg: "Hubo un problema actualizando el usuario, favor intentelo nuevamente",
-        color: "alert alert-success"
-      });
-      setTimeout(() => {
-        this.setState({
-          error: false,
-          errorMsg: "",
-          color: ""
-        });
-      }, "4000");
-    }
     });
 
   };

@@ -97,7 +97,7 @@ form{
 }
 
 .bg-gray{
-  background-color: #D1D4DB;
+  background-color: rgba(209, 212, 219, .16) ;
 }
 
 .bg-blue{
@@ -241,60 +241,13 @@ opacity: 1;
   cursor: pointer;
 }
 
-.lds-dual-ring {
-  display: inline-block;
-  width: 30px;
-  height: 30px;
+.hideDesc{
+  overflow: hidden; /* make sure it hides the content that overflows */
+  white-space: nowrap; /* don't break the line */
+  text-overflow: ellipsis; /* give the beautiful '...' effect */
 }
 
-.lds-dual-ring-2 {
-  display: inline-block;
-  width: 30px;
-  height: 30px;
+
+.left-action-btn{
+  left: 85% !important;
 }
-
-.lds-dual-ring:after {
-  content: " ";
-  display: block;
-  width: 20px;
-  height: 20px;
-  margin: 8px;
-  border-radius: 50%;
-  border: 6px solid #fff;
-  border-color: #fff transparent #fff transparent;
-  animation: lds-dual-ring 1.2s linear infinite;
-}
-
-.lds-dual-ring-2:after {
-  content: " ";
-  display: block;
-  width: 20px;
-  height: 20px;
-  margin: 8px;
-  border-radius: 50%;
-  border: 6px solid #1E6AAC;
-  border-color: #1E6AAC transparent #1E6AAC transparent;
-  animation: lds-dual-ring 1.2s linear infinite;
-}
-
-@keyframes lds-dual-ring {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-.letter-login{
-  background-color: #1E6AAC;
-  color: white;
-  border-radius: 100%;
-
-  width: 50px;
-  text-align: center;
-  margin: 1%;
-  padding: 0%;
-  margin-right: 5%;
-}
-

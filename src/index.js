@@ -19,7 +19,6 @@ import ChangePassword from "./screen/components/Auth/ChangePassword";
 axios.defaults.headers.common['access-control-allow-origin'] = '*';
 
 const root = createRoot(document.getElementById("root"));
-console.log(root);
 root.render(
   <BrowserRouter>
     <Routes>
@@ -28,6 +27,7 @@ root.render(
       <Route path="/change-password" exact element={ <ChangePassword /> } />
       {
         (sessionStorage.getItem('token') === null ? <Route path="/home/*" element={ <Navigate replace to="/" />}  /> :<Route path="/home/*" element={<AdminLayout />} /> )
+
       }
 
 

@@ -59,7 +59,7 @@ const AppUtil = {
         }
 
       });
-      console.log(response);
+
       let dataRet = response.data;
       return dataRet;
     }

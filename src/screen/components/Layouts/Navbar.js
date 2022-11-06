@@ -1,19 +1,12 @@
 
-import React, {useState} from "react";
+import React  from "react";
 import { useLocation } from "react-router-dom";
 import { Navbar, Container, Nav, Dropdown, Button, Form , InputGroup} from "react-bootstrap";
-import crypto from "crypto-js";
+
 import routes from "../../../routes.js";
 
 function Header() {
-  const [user, setUser] = useState("");
   const location = useLocation();
-  let bytes = crypto.AES.decrypt(
-    sessionStorage.getItem("user"),
-    "@virtual_cr"
-  );
-  let data = JSON.parse(bytes.toString(crypto.enc.Utf8));
-  let letter = data.name.charAt(0).toUpperCase();
   const mobileSidebarToggle = (e) => {
     e.preventDefault();
     document.documentElement.classList.toggle("nav-open");
@@ -37,12 +30,6 @@ function Header() {
 
   const profile = () => {
     window.location.href = "/home/profile";
-  }
-
-  const logOut = () => {
-    sessionStorage.removeItem('token');
-    sessionStorage.setItem('closed', true);
-    window.location.href = "/";
   }
 
   return (
@@ -71,14 +58,14 @@ function Header() {
         </Navbar.Toggle>
         <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
 
-          <Nav className="ml-auto d-flex align-items-baseline" navbar>
+          <Nav className="ml-auto" navbar>
             <Nav.Item>
             <Nav.Link
               href="#"
               onClick={(e) => e.preventDefault()}
             >
               <InputGroup className="inputSearch">
-               <i className="nc-icon nc-zoom-split p-1"></i>
+               <i className="nc-icon nc-zoom-split"></i>
                 <Form.Control
                   placeholder="Buscar..."
                   type="text"
@@ -124,8 +111,7 @@ function Header() {
                   variant="default"
                   className="m-0"
                 >
-                  <span className="letter-login">{letter}</span>
-                  <span className="ml-1 txt-blue">{data.name}</span>
+                  <span className="ml-1 txt-blue">John Doe</span>
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
                 <Dropdown.Item
@@ -136,7 +122,7 @@ function Header() {
                 </Dropdown.Item>
                 <Dropdown.Item
                   href="#"
-                  onClick={logOut}
+                  onClick={(e) => e.preventDefault()}
                 >
                   Cerrar Sesión
                 </Dropdown.Item>
