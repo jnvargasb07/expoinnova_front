@@ -11,29 +11,9 @@ export default class IdeaDetail extends React.Component {
 
     constructor(props){
       super(props);
-      const { location } = this.props;
-      const query = new URLSearchParams(location.search);
-
       this.state = {
-        ideaInfo: false,
-        ideaId:query.get('id'),
+
       }
-    }
-
-    getIdeaById = () =>
-    {
-      AppUtil.getAPI(`${url}ideas/${this.state.ideaId}`, sessionStorage.getItem('token')).then(response => {
-        console.log(response);
-        if (response)
-        {
-          this.setState({ideaInfo:response.data})
-        }
-      });
-    }
-
-    componentWillMount()
-    {
-      this.getIdeaById();
     }
 
 
@@ -43,7 +23,7 @@ export default class IdeaDetail extends React.Component {
         <Container fluid>
 
           <h3 className="txt-blue"><i className="nc-icon nc-grid-45"></i><span className="p-1">Nombre Feria</span></h3>
-          <Button variant="warning" className="btn-fill btn-rounded" onClick={() => this.props.navigate(-1)}>
+          <Button variant="warning" className="btn-fill btn-rounded" onClick={() => this.props.navigate('/home/fairdetail')}>
             <i className="nc-icon nc-stre-left"></i>
               Volver
             </Button>

@@ -1,11 +1,12 @@
 
-import React  from "react";
+import React, {useState} from "react";
 import { useLocation } from "react-router-dom";
 import { Navbar, Container, Nav, Dropdown, Button, Form , InputGroup} from "react-bootstrap";
 
 import routes from "../../../routes.js";
 
 function Header() {
+  const [user, setUser] = useState("");
   const location = useLocation();
   const mobileSidebarToggle = (e) => {
     e.preventDefault();
@@ -17,6 +18,13 @@ function Header() {
       document.documentElement.classList.toggle("nav-open");
     };
     document.body.appendChild(node);
+
+    let bytes = crypto.AES.decrypt(
+      sessionStorage.getItem("user"),
+      "@virtual_cr"
+    );
+    setUser(JSON.parse(bytes.toString(crypto.enc.Utf8)));
+    console.log(user);
   };
 
   const getBrandText = () => {
