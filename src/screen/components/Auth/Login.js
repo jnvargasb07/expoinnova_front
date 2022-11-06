@@ -15,6 +15,7 @@ class Login extends Component {
       },
       error: false,
       errorMsg: "",
+      color:"",
       charging:false
     };
   }
@@ -36,6 +37,34 @@ class Login extends Component {
       },
     });
   };
+
+  componentDidMount(){
+    let exp = sessionStorage.getItem('expired');
+    if(exp){
+      sessionStorage.removeItem('expired');
+      this.setState({
+        error: true,
+        errorMsg: "Su sesión ha caducado",
+        color:"alert alert-danger"
+      });
+    }
+    let closed = sessionStorage.getItem('closed');
+    if(closed){
+      sessionStorage.removeItem('closed');
+      this.setState({
+        error: true,
+        errorMsg: "Su sesión se ha cerrado con éxito",
+        color:"alert alert-success"
+      });
+    }
+    setTimeout(() => {
+      this.setState({
+        error: false,
+        errorMsg: "",
+        color: ""
+      });
+    }, "3000");
+  }
 
   //se maneja la autenticacion del usuario
   login = () => {
@@ -98,7 +127,7 @@ class Login extends Component {
             <br></br>
             <hr className="hr-login"></hr>
             {this.state.error === true && (
-              <div className="alert alert-danger" role="alert">
+              <div className={this.state.color} role="alert">
                 {this.state.errorMsg}
               </div>
             )}

@@ -10,9 +10,19 @@ import Home from "./screen/components/Home/Home.js";
 import Profile from "./screen/components/Profile/profile";
 import NewProfile from "./screen/components/Profile/newProfile";
 
+import { useJwt } from "react-jwt";
+
 import routes from "./routes.js";
 
 function Admin() {
+  console.log('pase');
+  //se valida si el token es valido aun
+  const { decodedToken, isExpired } = useJwt(sessionStorage.getItem('token'));
+  if(isExpired){
+    sessionStorage.removeItem('token');
+    sessionStorage.setItem('expired', true);
+    window.location.replace('/');
+  }
 
   const location = useLocation();
   const mainPanel = React.useRef(null);
