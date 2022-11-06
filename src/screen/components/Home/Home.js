@@ -82,7 +82,7 @@ import { url, fairDescription } from "../services/api";
     let {id} = this.state;
     if (id > 0)
     {
-      AppUtil.deleteAPI(`${url}fairs/${id}`, sessionStorage.getItem('token')).then(response => {
+      AppUtil.deleteAPI(`${url}fairs/${id}`).then(response => {
 
         if (response.success)
         {

@@ -65,7 +65,7 @@ class Profile extends Component {
   updateData = () => {
     this.setState({
       edit:false
-    })      
+    })
   };
 
   saveData = () => {
@@ -75,11 +75,22 @@ class Profile extends Component {
     let user = {
       name:this.state.form.name,
       email:this.state.form.email,
-      // password:this.state.form.password
+      password:this.state.form.password
     }
 
     AppUtil.putAPI(url_api+'/'+id, user).then(response => {
-      console.log(response);
+      this.setState({
+       error: true,
+       errorMsg: "El usuario se actualizo exitosamente",
+       color: "alert alert-success"
+     });
+     setTimeout(() => {
+       this.setState({
+         error: false,
+         errorMsg: "",
+         color: ""
+       });
+     }, "4000");
     });
 
   };
@@ -106,6 +117,11 @@ class Profile extends Component {
                   </h2>
                   <br></br>
                 </div>
+                {this.state.error === true &&
+                     <div className={this.state.color} role="alert">
+                       {this.state.errorMsg}
+                     </div>
+                   }
                 <div className="p-3">
                   <div className="form-group d-flex align-items-baseline p-1">
                     <label
@@ -165,7 +181,7 @@ class Profile extends Component {
                   </div>
                 </div>
                 <div className="text-center p-2">
-                  {this.state.edit === true && 
+                  {this.state.edit === true &&
                     <button
                       variant="none"
                       size="lg"
@@ -173,11 +189,11 @@ class Profile extends Component {
                       className="bg-darkblue btn-lg btn-rounded txt-white-btn"
                     >
                       Editar Información
-                      
+
                     </button>
                   }
 
-                  {this.state.edit === false && 
+                  {this.state.edit === false &&
                     <button
                       variant="none"
                       size="lg"

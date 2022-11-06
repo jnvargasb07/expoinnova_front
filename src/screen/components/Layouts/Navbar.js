@@ -27,6 +27,11 @@ function Header() {
     }
     return "Inicio";
   };
+
+  const profile = () => {
+    window.location.href = "/home/profile";
+  }
+
   return (
     <Navbar bg="light" expand="lg">
       <Container fluid>
@@ -111,7 +116,7 @@ function Header() {
                 <Dropdown.Menu>
                 <Dropdown.Item
                   href="#"
-                  onClick={(e) => e.preventDefault()}
+                  onClick={profile}
                 >
                   Cuenta
                 </Dropdown.Item>
