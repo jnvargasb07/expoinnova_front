@@ -15,6 +15,8 @@ class Login extends Component {
       },
       error: false,
       errorMsg: "",
+      color:"",
+      charging:false
     };
   }
 
@@ -36,10 +38,41 @@ class Login extends Component {
     });
   };
 
+  componentDidMount(){
+    let exp = sessionStorage.getItem('expired');
+    if(exp){
+      sessionStorage.removeItem('expired');
+      this.setState({
+        error: true,
+        errorMsg: "Su sesión ha caducado",
+        color:"alert alert-danger"
+      });
+    }
+    let closed = sessionStorage.getItem('closed');
+    if(closed){
+      sessionStorage.removeItem('closed');
+      this.setState({
+        error: true,
+        errorMsg: "Su sesión se ha cerrado con éxito",
+        color:"alert alert-success"
+      });
+    }
+    setTimeout(() => {
+      this.setState({
+        error: false,
+        errorMsg: "",
+        color: ""
+      });
+    }, "3000");
+  }
+
   //se maneja la autenticacion del usuario
   login = () => {
     
     if (this.state.form.email !== "" && this.state.form.password !== "") {
+      this.setState({
+        charging: true
+      });
       let url_api = url + "login";
       console.log(this.state.form);
       axios
@@ -60,6 +93,7 @@ class Login extends Component {
             this.setState({
               error: true,
               errorMsg: "Usuario o contraseña incorrectos",
+              charging:false
             });
           }
         })
@@ -67,12 +101,14 @@ class Login extends Component {
           this.setState({
             error: true,
             errorMsg: "Ha ocurrido un problema favor intentelo nuevamente",
+            charging:false
           });
         });
     }else{
       this.setState({
         error: true,
         errorMsg: "Todos los campos son requeridos",
+        charging:false
       });
     }
   };
@@ -91,7 +127,7 @@ class Login extends Component {
             <br></br>
             <hr className="hr-login"></hr>
             {this.state.error === true && (
-              <div className="alert alert-danger" role="alert">
+              <div className={this.state.color} role="alert">
                 {this.state.errorMsg}
               </div>
             )}
@@ -124,14 +160,25 @@ class Login extends Component {
                   />
                 </div>
                 <div className="d-flex justify-content-center">
-                <button
-                  type="submit"
-                  id="action-btn"
-                  className="btn btn-primary btn-block blue-button-login col-sm-12 col-md-12 col-xs-12 w-100"
-                  onClick={this.login}
-                >
-                  Iniciar Sesión
-                </button>
+                {!this.state.charging &&
+                  <button
+                    type="submit"
+                    id="action-btn"
+                    className="btn btn-primary btn-block blue-button-login col-sm-12 col-md-12 col-xs-12 w-100"
+                    onClick={this.login}
+                  >
+                    Iniciar Sesión
+                  </button>
+                }
+                {this.state.charging &&
+                    <button
+                    type="submit"
+                    id="action-btn"
+                    className="btn btn-primary btn-block blue-button-login col-sm-12 col-md-12 col-xs-12 w-100"
+                  >
+                    <div class="lds-dual-ring"></div>
+                  </button>
+                }
                 </div>
                 <div className="sign-up">
                   ¿Olvido su contraseña? <a href="/recovery" className="blue-text-login">Recuperar</a>

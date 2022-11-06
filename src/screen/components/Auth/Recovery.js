@@ -1,4 +1,4 @@
-import React, {Component} from "react";
+import React, { Component } from "react";
 
 
 import axios from "axios";
@@ -17,6 +17,7 @@ class Recovery extends Component {
       error: false,
       errorMsg: "",
       nextPage: false,
+      charging: false
     };
   }
 
@@ -40,22 +41,26 @@ class Recovery extends Component {
 
   //se maneja la recuperacion de contraseña
   recovery = () => {
-      if(this.state.form.email !== ""){
-
-        let url_api = url + "request-password";
-        axios
+    if (this.state.form.email !== "") {
+      this.setState({
+        charging: true
+      });
+      let url_api = url + "request-password";
+      axios
         .post(url_api, this.state.form)
         .then((response) => {
           if (response.status === 200) {
             this.setState({
-              nextPage:true,
-              error:false,
-              errorMsg:""
-          })
+              nextPage: true,
+              error: false,
+              errorMsg: "",
+              charging: false
+            })
           } else {
             this.setState({
               error: true,
               errorMsg: "Usuario o contraseña incorrectos",
+              charging: false
             });
           }
         })
@@ -63,54 +68,72 @@ class Recovery extends Component {
           this.setState({
             error: true,
             errorMsg: "Ha ocurrido un problema favor intentelo nuevamente",
+            charging: false
           });
         });
-      }else{
-        this.setState({
-            error:true,
-            errorMsg:"Debe llenar el campo de correo electrónico"
-        })
-      }
+    } else {
+      this.setState({
+        error: true,
+        errorMsg: "Debe llenar el campo de correo electrónico",
+        charging: false
+      })
+    }
   };
 
   //se verifica que el código de verificación sea valido
   verifyCode = () => {
-    if(this.state.form.code !== ""){
+    if (this.state.form.code !== "") {
+      this.setState({
+        charging: true
+      });
       let url_api = url + "validate-code";
       axios
-      .post(url_api, this.state.form)
-      .then((response) => {
-        if (response.data.data) {
-          sessionStorage.setItem('code', this.state.form.verification_code);
-          window.location.href = "/change-password";
-        } else {
+        .post(url_api, this.state.form)
+        .then((response) => {
+          if (response.data.data) {
+            sessionStorage.setItem('code', this.state.form.verification_code);
+            window.location.href = "/change-password";
+          } else {
+            this.setState({
+              error: true,
+              errorMsg: "Código de verificación incorrecto",
+              charging: false
+            });
+          }
+        })
+        .catch((error) => {
           this.setState({
             error: true,
-            errorMsg: "Código de verificación incorrecto",
+            errorMsg: "Ha ocurrido un problema favor intentelo nuevamente",
+            charging: false
           });
-        }
-      })
-      .catch((error) => {
-        this.setState({
-          error: true,
-          errorMsg: "Ha ocurrido un problema favor intentelo nuevamente",
         });
-      });
-    }else{
+    } else {
       this.setState({
-          error:true,
-          errorMsg:"El campo de código de verificación es requerido"
+        error: true,
+        errorMsg: "El campo de código de verificación es requerido",
+        charging: false
       })
     }
-};
+  };
+
+  goBack = () => {
+    window.location.href = '/';
+  }
 
   render() {
     return (
       <div className="global-container m-0 vh-100 row justify-content-center align-items-center">
         <div className="card login-form box">
           <div className="card-body">
-          <div className="text-center m-5">
-              <img src={logo} alt="Logo"/>
+            <div>
+            <a onClick={this.goBack}>
+              <i class="fas fa-angle-left blue-text-login"></i>
+              <span className="blue-text-login">Volver</span>
+            </a>
+            </div>
+            <div className="text-center m-5">
+              <img src={logo} alt="Logo" />
             </div>
             <h3 className="card-title text-center blue-text-login h4">Restablecer Contraseña</h3>
             {this.state.nextPage === false && (
@@ -122,10 +145,10 @@ class Recovery extends Component {
                   </small >
                 </div>
                 {this.state.error === true &&
-                    <div class="alert alert-danger" role="alert">
-                      {this.state.errorMsg}
-                    </div>
-                  }
+                  <div class="alert alert-danger" role="alert">
+                    {this.state.errorMsg}
+                  </div>
+                }
                 <div className="card-text">
                   {/* <div className="alert alert-danger alert-dismissible fade show" role="alert">Incorrect username or password.</div> */}
                   <form onSubmit={this.preventSubmit}>
@@ -145,14 +168,25 @@ class Recovery extends Component {
                     </div>
                     <br></br>
                     <div className="d-flex justify-content-center">
-                    <button
-                      type="submit"
-                      id="action-btn"
-                      className="btn btn-primary btn-block col-md-12 background-button-recovery w-100"
-                      onClick={this.recovery}
-                    >
-                      Continuar
-                    </button>
+                      {!this.state.charging &&
+                        <button
+                          type="submit"
+                          id="action-btn"
+                          className="btn btn-primary btn-block col-md-12 background-button-recovery w-100"
+                          onClick={this.recovery}
+                        >
+                          Continuar
+                        </button>
+                      }
+                      {this.state.charging &&
+                        <button
+                          type="submit"
+                          id="action-btn"
+                          className="btn btn-primary btn-block background-button-recovery col-sm-12 col-md-12 col-xs-12 w-100"
+                        >
+                          <div class="lds-dual-ring"></div>
+                        </button>
+                      }
                     </div>
                   </form>
                 </div>
@@ -166,33 +200,44 @@ class Recovery extends Component {
                   </p>
                 </div>
                 {this.state.error === true &&
-                    <div class="alert alert-danger" role="alert">
-                      {this.state.errorMsg}
-                    </div>
-                  }
+                  <div class="alert alert-danger" role="alert">
+                    {this.state.errorMsg}
+                  </div>
+                }
                 <div className="form-group">
-                      <label htmlFor="exampleInputEmail1">
-                        Código de verificación
-                      </label>
-                      <input
-                        type="verification_code"
-                        className="form-control form-control-sm"
-                        id="verification_code"
-                        name="verification_code"
-                        aria-describedby="codeHelp"
-                        placeholder="Ingresa el código"
-                        onChange={this.getInputData.bind(this)}
-                      />
-                    </div>
-                    <div className="d-flex justify-content-center w-100">
-                      <a
-                        type="submit"
-                        id="action-btn"
-                        className="btn btn-primary btn-block col-md-12 background-button-recovery"
-                        onClick={this.verifyCode}
-                      >
-                        Continuar
-                      </a>
+                  <label htmlFor="exampleInputEmail1">
+                    Código de verificación
+                  </label>
+                  <input
+                    type="verification_code"
+                    className="form-control form-control-sm"
+                    id="verification_code"
+                    name="verification_code"
+                    aria-describedby="codeHelp"
+                    placeholder="Ingresa el código"
+                    onChange={this.getInputData.bind(this)}
+                  />
+                </div>
+                <div className="d-flex justify-content-center w-100">
+                  {!this.state.charging &&
+                    <a
+                      type="submit"
+                      id="action-btn"
+                      className="btn btn-primary btn-block col-md-12 background-button-recovery"
+                      onClick={this.verifyCode}
+                    >
+                      Continuar
+                    </a>
+                  }
+                  {this.state.charging &&
+                    <button
+                      type="submit"
+                      id="action-btn"
+                      className="btn btn-primary btn-block background-button-recovery col-sm-12 col-md-12 col-xs-12 w-100"
+                    >
+                      <div class="lds-dual-ring"></div>
+                    </button>
+                  }
                 </div>
               </div>
             )}

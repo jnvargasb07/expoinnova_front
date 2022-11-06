@@ -16,22 +16,52 @@ export default class IdeaDetail extends React.Component {
 
       this.state = {
         ideaInfo: false,
+        ideaInfoEdit:false,
         ideaId:query.get('id'),
         validatedQuestion:false,
         validateEvaluation:false,
         categories:[],
-        students:[]
+        students:[],
+        judges_has_ideas:[],
+        judges:[],
+        ideaModal: false,
+        validatedIdea:false,
+        keyideas:'general',
+        evaluations:[],
+        alert:{
+          show:false,
+          variant:'success',
+          title:"",
+          body:""
+        }
 
       }
     }
 
-    getIdeaById = () =>
-    {
+    getIdeaById = () =>{
       AppUtil.getAPI(`${url}ideas/${this.state.ideaId}`, sessionStorage.getItem('token')).then(response => {
-        console.log(response);
         if (response)
         {
-          this.setState({ideaInfo:response.data})
+
+          let ideaInfo = response.data;
+          let ideaInfoEdit = {
+            name: ideaInfo.name,
+            description: ideaInfo.description,
+            url_video: ideaInfo.url_video,
+            pdf_resume: ideaInfo.pdf_resume,
+            professor_users_id: ideaInfo.professor_users_id,
+            categories_id: ideaInfo.categories_id,
+            campus_id: ideaInfo.campus_id,
+            students_id: ideaInfo.students_id,
+            fairs_id: ideaInfo.fairs_id,
+            evaluations_id: ideaInfo.evaluations_id,
+            professor_name:ideaInfo.professor_users.name,
+            campus_name:ideaInfo.campuses.name,
+            fairs_name:ideaInfo.fairs.name,
+            ideas_to_course:""
+          };
+
+          this.setState({ideaInfo, ideaInfoEdit })
         }
       });
     }
@@ -42,7 +72,6 @@ export default class IdeaDetail extends React.Component {
         this.setState({categories});
       });
     }
-
     _fetchCoordinators = () =>{
       AppUtil.getAPI(`${url}students`, sessionStorage.getItem('token')).then(response => {
 
@@ -52,16 +81,128 @@ export default class IdeaDetail extends React.Component {
         }
       });
     }
+    _fetchJudges = () =>{
+      /*AppUtil.getAPI(`${url}judges_has_ideas`, sessionStorage.getItem('token')).then(response => {
 
-    componentWillMount()
-    {
-      this.getIdeaById();
-      this._fetchCategories();
+        if (response)
+        {
+          console.log(response.data);
+          this.setState({judges_has_ideas:response.data});
+        }
+      });*/
+
+      AppUtil.getAPI(`${url}judges`, sessionStorage.getItem('token')).then(response => {
+
+        if (response)
+        {
+          console.log(response.data);
+          this.setState({judges:response.data});
+        }
+      });
+    }
+    _fetchEvaluations = () => {
+      AppUtil.getAPI(`${url}evaluations`, sessionStorage.getItem('token')).then(response => {
+        if (response)
+        {
+          console.log(response);
+          this.setState({evaluations:response.data});
+        }
+      });
     }
 
+    SubmitIdeaSteps = (e) =>
+    {
+
+        const form = e.currentTarget;
+        console.log(e);
+        if (form.checkValidity() === false)
+        {
+          e.preventDefault();
+          e.stopPropagation();
+          return ;
+        }
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        switch (this.state.keyideas)
+        {
+          case 'general':
+            this.setState({keyideas:'materials'});
+          break;
+          case 'materials':
+            this.setState({keyideas:'data_idea'});
+          break;
+          case 'data_idea':
+            let {ideaInfoEdit, ideaInfo} = this.state;
+              AppUtil.putAPI(`${url}ideas/${ideaInfo.id}`, ideaInfoEdit).then(response => {
+                if (response.success)
+                {
+                  this.toggleIdea();
+                  let alert = {
+                    show:true,
+                    variant:'success',
+                    title:"Idea editada",
+                    body:"La idea fue editada correctamente"
+                  };
+                  this.getIdeaById();
+                  this.setState({alert})
+
+                  return ;
+                }
+                let alert = {
+                  show:true,
+                  variant:'danger',
+                  title:"Error al editar la idea",
+                  body:"No se pudo editar la idea, por favor intente más tarde"
+                }
+                this.setState({alert})
+              });
+              break;
+        }
+    }
+
+    toggleIdea = () => this.setState({ideaModal: !this.state.ideaModal});
+    componentWillMount()
+    {
+      this._fetchCoordinators();
+      this._fetchEvaluations();
+      this.getIdeaById();
+      this._fetchCategories();
+      this._fetchJudges();
+    }
+
+    getInputIdea = async (e) => {
+
+      await this.setState({
+        ideaInfoEdit: {
+          ...this.state.ideaInfoEdit,
+          [e.target.name]: e.target.value,
+        },
+      });
+    };
+
+    getIdeaDataSelect = async (e) => {
+
+
+      let info = JSON.parse(e.target.value);
+
+      await this.setState({
+        ideaInfoEdit: {
+          ...this.state.ideaInfoEdit,
+          students_id: info.id,
+          professor_users_id: info.professor_users.id,
+          professor_name:info.professor_users.name,
+          campus_id: info.campus_id,
+          fairs_id: this.state.id,
+          campus_name:info.campuses.name
+        },
+      });
+
+    };
 
     render() {
-      let {ideaInfo, validatedQuestion, validateEvaluation, categories, students} = this.state;
+      let {alert, keyideas, ideaInfo, validatedQuestion, validateEvaluation, categories, students, ideaModal, judges, validatedIdea, ideaInfoEdit} = this.state;
       return (
         <>
         <Toast onClose={()=> this.setState({alert:{show:false}} )} variant={alert.variant} show={alert.show} title={alert.title} body={alert.body}  />
@@ -417,6 +558,248 @@ export default class IdeaDetail extends React.Component {
                    Enviar
                  </Button>
               </Form>
+
+
+              <Modal
+                show={ideaModal}
+                onHide={this.toggleIdea}
+                backdrop="static"
+                keyboard={false}
+                size="lg"
+
+                >
+                <Modal.Header closeButton>
+                  <h3 className=" tituloFerias">Editar Idea de Negocios</h3>
+                </Modal.Header>
+                <Modal.Body>
+                <Tabs
+                  id="controlled-tab-example"
+                  activeKey={keyideas}
+                  className="mb-3 txt-blue"
+                  defaultActiveKey="general"
+                  >
+
+                   <Tab eventKey="general" title="General" className="txt-darkblue">
+                     <Form validated={validatedIdea} onSubmit={this.SubmitIdeaSteps}>
+                      <Row className="m-2">
+                        <Col sm="12" xl="12">
+
+                         <Form.Group controlId="validationCustom01">
+                          <Form.Label>Coordinador</Form.Label>
+                           <Form.Select aria-label="Coordinador" type="text" name="students_id" onChange={this.getIdeaDataSelect} required>
+                           <option value="">-- Seleccione una opción --</option>
+                            {students?.map((item, key) =>(
+                              ideaInfoEdit.students_id === item.id  ?  <option value={JSON.stringify(item)} key={key} defaultValue selected>{item.users.name} ({item.users.email})</option> : <option value={JSON.stringify(item)} key={key}>{item.users.name} ({item.users.email})</option>
+                            ))}
+                             </Form.Select>
+                             <Form.Control.Feedback type="invalid">El Coordinador es requerido</Form.Control.Feedback>
+                         </Form.Group>
+                         </Col>
+                       </Row>
+                       <Row className="m-2">
+                         <Col sm="12" xl="6">
+                           <label className="txt-darkblue">Jurado</label>
+                          <Form.Group controlId="validationCustom02">
+                            <Form.Select aria-label="Judges" type="text" name="judge_id" onChange={this.getInputIdea} required>
+                               <option value="">-- Seleccione una opción --</option>
+                              {judges?.map((item, key) =>(
+                                 <option value={item.id} key={key}>{item.business_name} </option>
+                              ))}
+                             </Form.Select>
+                             <Form.Control.Feedback type="invalid">El jurado es requerido</Form.Control.Feedback>
+                          </Form.Group>
+                          </Col>
+                          <Col sm="12" xl="6">
+                            <label className="txt-darkblue">Ideas al curso</label>
+                             <Form.Group controlId="validationCustom03">
+                               <Form.Control
+                                 placeholder="Ideas al curso"
+                                 type="text"
+                                 required
+                                 name="ideas_to_course"
+                                 onChange={this.getInputIdea}
+                                 value={ideaInfoEdit ? ideaInfoEdit.ideas_to_course : ""}
+                                 >
+                               </Form.Control>
+                             </Form.Group>
+                           </Col>
+                        </Row>
+                        <Col xl="12" sm="12" md="12" className="text-align-center">
+                          <Button className="btn-rounded btn-fill bg-darkblue" type="submit">
+                            Siguiente
+                          </Button>
+                        </Col>
+                        </Form>
+                   </Tab>
+                   <Tab eventKey="materials" title="Materiales">
+                   <Form validated={validatedIdea} onSubmit={this.SubmitIdeaSteps}>
+                     <Row className="m-2">
+                       <Col sm="12" xl="12">
+                         <label>Videos (Insertar enlace de video)</label>
+                        <Form.Group>
+                          <Form.Control
+                             placeholder="Video"
+                             type="url"
+                             name="url_video"
+                             onChange={this.getInputIdea}
+                             required
+                             value={ideaInfoEdit ? ideaInfoEdit.url_video: ""}
+                             >
+                            </Form.Control>
+                        </Form.Group>
+                        </Col>
+                      </Row>
+                      <Row className="m-2">
+                        <Col sm="12" xl="12">
+                          <label>Presentaciones (Subir documento)</label>
+                         <Form.Group>
+
+                           <Form.Control
+                              type="file"
+                              name="pdf_resume"
+                              onChange={this.getInputIdea}
+                              required
+                              //value={ideaInfoEdit ? ideaInfoEdit.pdf_resume : ""}
+                              >
+                             </Form.Control>
+                         </Form.Group>
+                         </Col>
+                       </Row>
+
+                       <Row className="m-2">
+                         <Col sm="12" xl="12">
+                          <Form.Group>
+                           <Form.Label>Evaluación</Form.Label>
+                            <Form.Select aria-label="Coordinador" type="text" name="evaluations_id" onChange={this.getInputIdea} required>
+                            <option value="">-- Seleccione una opción --</option>
+                             {this.state.evaluations?.map((item, key) =>(
+                               ideaInfoEdit.evaluations_id == item.id ?  <option value={item.id} selected defaultValue key={key}>{item.tittle}</option> :  <option value={item.id} key={key}>{item.tittle}</option>
+                             ))}
+                              </Form.Select>
+                              <Form.Control.Feedback type="invalid">La evaluación es requerido</Form.Control.Feedback>
+                          </Form.Group>
+                          </Col>
+                        </Row>
+
+
+                       <Row>
+                         <Col xl="6" sm="12" md="12" className="text-align-center">
+                           <Button className="btn-rounded btn-fill bg-darkblue" onClick={() => this.setState({keyideas:'general'})}>
+                             Volver
+                           </Button>
+                         </Col>
+                         <Col xl="6" sm="12" md="12" className="text-align-center">
+                           <Button className="btn-rounded btn-fill bg-darkblue" type="submit">
+                             Siguiente
+                           </Button>
+                         </Col>
+                       </Row>
+                     </Form>
+                   </Tab>
+                   <Tab eventKey="data_idea" title="Datos de la idea">
+                    <Form validated={validatedIdea} onSubmit={this.SubmitIdeaSteps}>
+                     <Row className="m-2">
+                       <Col sm="12" xl="6">
+                         <label>Nombre de la idea</label>
+                        <Form.Group>
+                          <Form.Control
+                             type="text"
+                             name="name"
+                             onChange={this.getInputIdea}
+                             required
+                             value={ideaInfoEdit ? ideaInfoEdit.name : ""}
+                             >
+                            </Form.Control>
+                        </Form.Group>
+                        </Col>
+                        <Col sm="12" xl="6">
+                          <label>Nombre del profesor</label>
+                         <Form.Group>
+                           <Form.Control
+                              type="text"
+                              name="professor_name"
+                              value={ideaInfoEdit ? ideaInfoEdit.professor_name : ""}
+                              readOnly
+                              required
+
+                              >
+                             </Form.Control>
+                         </Form.Group>
+                         </Col>
+                      </Row>
+                      <Row className="m-2">
+                      <Col sm="12" xl="6">
+                        <label>Sede Universitario</label>
+                       <Form.Group>
+                         <Form.Control
+                            type="text"
+                            name="university_name"
+                            readOnly
+                            value={ideaInfoEdit ? ideaInfoEdit.campus_name : ""}
+                            required
+                            >
+                           </Form.Control>
+                       </Form.Group>
+                       </Col>
+                       <Col sm="12" xl="6">
+                         <label>Feria que pertenece</label>
+                        <Form.Group>
+                          <Form.Control
+                             type="text"
+                             name="fair_name"
+                             readOnly
+                             value={ideaInfoEdit ? ideaInfoEdit.fairs_name : ""}
+                             required
+                             >
+                            </Form.Control>
+                        </Form.Group>
+                        </Col>
+                      </Row>
+
+
+                      <Row>
+                        <Col sm="12" xl="12">
+                        <label className="txt-darkblue">Descripción de la idea</label>
+                         <Form.Group>
+                           <Form.Control
+                              placeholder="Descripción de la idea"
+                              as="textarea"
+                              style={{ height: '100px' }}
+                              name="description"
+                              onChange={this.getInputIdea}
+                              required
+                              value={ideaInfoEdit ? ideaInfoEdit.description : ""}
+                              >
+                             </Form.Control>
+                         </Form.Group>
+                        </Col>
+                      </Row>
+
+                      <Row>
+                        <Col xl="6" sm="12" md="12" className="text-align-center">
+                          <Button className="btn-rounded btn-fill bg-darkblue" onClick={() => this.setState({keyideas:'materials'})}>
+                            Volver
+                          </Button>
+                        </Col>
+                        <Col xl="6" sm="12" md="12" className="text-align-center">
+                          <Button type="submit" className="btn-rounded btn-fill bg-darkblue" type="submit">
+                            Guardar
+                          </Button>
+                        </Col>
+                      </Row>
+                      </Form>
+                   </Tab>
+
+               </Tabs>
+                </Modal.Body>
+                <Modal.Footer>
+                  <div className="text-align-center">
+                    <Button className="btn-rounded" variant="light" onClick={this.toggleIdea}>
+                      Cerrar
+                      </Button>
+                  </div>
+                </Modal.Footer>
+              </Modal>
 
 
         </Container>
