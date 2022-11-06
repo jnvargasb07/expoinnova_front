@@ -18,7 +18,7 @@ function Admin() {
   const mainPanel = React.useRef(null);
     const navigation = useNavigate();
     const params = useParams();
-    console.log(location);
+
   const getRoutes = (routes) => {
     return routes.map((prop, key) => {
 
@@ -71,11 +71,11 @@ function Admin() {
                 <Route path={'/profile'} element={<Profile />} />
                 <Route path={'/new-profile'} element={<NewProfile />} />
                                <Route
-                  path={'/fairdetail/:id'}
+                  path={'/fairdetail'}
                   element={<FairDetail navigate={navigation} params={params} location={location}  />}
                   />
                   <Route
-                    path={'/fairdetail/idea/:id'}
+                    path={'/fairdetail/idea'}
                     element={<IdeaDetail navigate={navigation} params={params} location={location}  />}
                     />
               </Routes>
