@@ -14,7 +14,7 @@ import {
   Tab,
   Nav,
   Dropdown,
-  re
+  Spinner
 } from "react-bootstrap";
 import AppUtil from '../../../AppUtil/AppUtil.js';
 import Toast from '../common/Toast.js';
@@ -31,8 +31,10 @@ import { url, fairDescription } from "../services/api";
     this.state = {
       show: false,
       showDelete:false,
-      post:[],
+      post:false,
       key:'info',
+      categories:[],
+      processing:false,
       form:{
         name:"",
         description:"",
@@ -69,6 +71,15 @@ import { url, fairDescription } from "../services/api";
       let post = responseFair ? responseFair.data : [];
       this.setState({post});
     });
+    //categories
+
+    AppUtil.getAPI(`${url}categories`, sessionStorage.getItem('token')).then(responseFair => {
+
+      let categories = responseFair ? responseFair.data : [];
+      this.setState({categories});
+    });
+
+
   }
 
   componentWillMount() { this._loadFairs(); }
@@ -80,8 +91,10 @@ import { url, fairDescription } from "../services/api";
 
   deleteFair = () =>{
     let {id} = this.state;
+
     if (id > 0)
     {
+      this.setState({processing: true})
       AppUtil.deleteAPI(`${url}fairs/${id}`).then(response => {
 
         if (response.success)
@@ -92,7 +105,7 @@ import { url, fairDescription } from "../services/api";
               title:"Feria eliminada",
               body:"Feria de negocio eliminada satisfactoriamente"
             }
-            this.setState({alert}, () => {
+            this.setState({alert, processing: false}, () => {
               this.toggleDelete(0);
               this._loadFairs();
             });
@@ -105,30 +118,53 @@ import { url, fairDescription } from "../services/api";
           title:"Feria no eliminada",
           body:"La feria no se pudo eliminar, por favor intente más tarde"
         }
-        this.setState({alert});
+        this.setState({alert, processing: false});
 
       })
     }
 
   }
   submitFair = () =>{
+    this.setState({processing: true});
     let {form} = this.state;
 
     if (form.name.trim() !== "" && form.description.trim() !== "" && form.category.trim() !== "")
     {
-        AppUtil.postAPI(`${url}fairs`, form, sessionStorage.getItem('token')).then(response => {
+        AppUtil.postAPI(`${url}fairs`, form).then(response => {
           if (response.success)
           {
-            let alert = {
-              show:true,
-              variant:'success',
-              title:"Feria creada",
-              body:"Feria de negocio creada satisfactoriamente"
-            }
-            this.setState({alert}, () => {
-              this.toggleShow();
-              this._loadFairs();
+
+            AppUtil.postAPI(`${url}categorie_fair`, {fairs_id: response.data.id, categories_id:form.category }).then(responseCatFair => {
+
+              if (responseCatFair.success)
+              {
+                let alert = {
+                  show:true,
+                  variant:'success',
+                  title:"Feria creada",
+                  body:"Feria de negocio y categoría creada satisfactoriamente"
+                }
+                this.setState({alert, processing: false}, () => {
+                  this.toggleShow();
+                  this._loadFairs();
+                });
+              }
+              else
+              {
+                  let alert = {
+                    show:true,
+                    variant:'warning',
+                    title:"Feria creada",
+                    body:"Feria de negocio categoría creada satisfactoriamente pero no se pudo asignar la categoría"
+                  }
+                  this.setState({alert, processing: false}, () => {
+                    this.toggleShow();
+                    this._loadFairs();
+                  });
+
+              }
             });
+
             return ;
           }
           let alert = {
@@ -145,7 +181,7 @@ import { url, fairDescription } from "../services/api";
   }
 
 render() {
-  let {show, showDelete, post, key, alert} = this.state;
+  let {show, showDelete, post, key, alert, categories, processing} = this.state;
   return (
     <>
     <Toast onClose={()=> this.setState({alert:{show:false}} )} variant={alert.variant} show={alert.show} title={alert.title} body={alert.body}  />
@@ -167,7 +203,8 @@ render() {
 
         <Row>
         {
-          post?.map((item, i)=>(
+          post ?
+          (post?.map((item, i)=>(
             <Col lg="3" sm="6" key={i}>
               <Card className="card-stats" className="folder">
               <Dropdown className="position-absolute right m-1" as={Nav.Item} >
@@ -205,7 +242,7 @@ render() {
                   </a>
               </Card>
             </Col>
-          ))
+          ))) : (<div className="text-align-center"><Spinner animation="grow" variant="primary"  /></div>)
         }
         </Row>
         <Modal
@@ -247,15 +284,17 @@ render() {
              <Row className="m-2">
                <Col sm="12" xl="6">
                  <label className="txt-darkblue">Categoría</label>
+
                 <Form.Group>
-                  <Form.Control
-                     placeholder="Categoría"
-                     type="text"
-                     onChange={this.getInputData}
-                     name="category"
-                      >
-                    </Form.Control>
+                  <Form.Select aria-label="Categoría" name="category" onChange={this.getInputData}>
+                    <option value="">-- Seleccione una opción --</option>
+                   {categories?.map((item) =>(
+                     <option value={item.id}>{item.name}</option>
+                   ))}
+                    </Form.Select>
                 </Form.Group>
+
+
                 </Col>
                 <Col sm="12" xl="6">
                   <label className="txt-darkblue">Fecha de inicio</label>
@@ -337,7 +376,7 @@ render() {
             <Button variant="light" className="btn-rounded" onClick={this.toggleShow}>
               Cerrar
             </Button>
-            <Button variant="primary" className="btn-fill btn-rounded" onClick={this.submitFair}>Guardar</Button>
+            {processing ? <Spinner animation="grow" variant="primary"  /> : <Button variant="primary" className="btn-fill btn-rounded" onClick={this.submitFair}>Guardar</Button>}
           </Modal.Footer>
         </Modal>
 
@@ -350,9 +389,9 @@ render() {
               <button variant="none" size="lg" onClick={()=> this.toggleDelete(0)} className="bg-darkblue btn-lg btn-rounded txt-white-btn">
                 Cancelar
               </button>
-              <button size="lg" onClick={this.deleteFair} className="bg-blue btn-lg btn-rounded txt-white-btn">
+              {processing ? <Spinner animation="grow" variant="primary"  />: (<button size="lg" onClick={this.deleteFair} className="bg-blue btn-lg btn-rounded txt-white-btn">
                 Eliminar
-              </button>
+              </button>)}
             </Modal.Footer>
           </Modal>
 

@@ -4,14 +4,14 @@ const apiUrl = "api/v1/" //"https://api.expoinnova.jegsnet.com/api/v1/"
 const token =  sessionStorage.getItem('token');
 const AppUtil = {
 
-  postAPI:async function postAPI(endpoint, dataPost, token = '')
+  postAPI:async function postAPI(endpoint, dataPost, tokenSent = token)
   {
     try {
 
       let response = await Axios.post(`${endpoint}`, dataPost, {
 
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${tokenSent}`,
           'Accept': 'application/json',
           'Content-Type': 'application/json'
 
