@@ -10,6 +10,7 @@ const dashboardRoutes = [
     component: Home,
     layout: "/home",
 
+
   },
   {
     path: "/",
@@ -17,6 +18,7 @@ const dashboardRoutes = [
     icon: "fas fa-user-plus",
     component: Home,
     layout: "/home/new-profile",
+
   },
   {
     path: "/forum",
@@ -24,6 +26,7 @@ const dashboardRoutes = [
     icon: "fas fa-cog",
     component: Home,
     layout: "/home",
+
   }
 ];
 

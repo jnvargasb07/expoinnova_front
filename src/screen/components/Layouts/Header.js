@@ -35,9 +35,9 @@ function Sidebar({ color, image, routes }) {
             if (!prop.redirect)
               return (
                 <li
-                  className={activeRoute(prop.layout) }
+                  className={activeRoute(prop.layout + prop.path)}
                   key={key}
-                >
+                  >
                   <NavLink
                     to={prop.layout + prop.path}
                     className="nav-link"
