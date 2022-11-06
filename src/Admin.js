@@ -4,6 +4,8 @@ import { useLocation, Route, Routes } from "react-router-dom";
 import AdminNavbar from "./screen/components/Layouts/Navbar";
 import Footer from "./screen/components/Layouts/Footer";
 import Sidebar from "./screen/components/Layouts/Header";
+import FairDetail from './screen/components/Home/FairDetail';
+
 
 import routes from "./routes.js";
 
@@ -46,7 +48,9 @@ function Admin() {
         <div className="main-panel" ref={mainPanel}>
             <AdminNavbar />
           <div className="content">
-            <Routes>{getRoutes(routes)}</Routes>
+            <Routes>{getRoutes(routes)}
+              <Route path={'/admin/fairdetail/:id'} element={<FairDetail />} />
+            </Routes>
           </div>
           <Footer />
         </div>

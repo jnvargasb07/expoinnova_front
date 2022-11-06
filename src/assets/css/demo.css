@@ -1,5 +1,68 @@
 /*ESTILOS PARA CAMPUS VIRTUAL*/
+
+@font-face {
+  font-family: 'PromptMedium';
+  src: url("../fonts/Prompt Medium.ttf");
+}
+
 .text-align-center
 {
   text-align: center !important;
+}
+
+.text-decoration-none{
+  text-decoration: none;
+}
+
+.right{
+  right: 0;
+}
+
+.btn-rounded{
+  border-radius: 60px;
+  border:none;
+}
+
+.bg-gray{
+  background-color: #E9EBEF;
+}
+
+.bg-blue{
+  background-color: #1A549C;
+}
+
+.bg-darkblue{
+  background-color: #181845;
+}
+
+.txt-blue{
+  color: #1A549C;
+}
+
+.txt-white{
+  color:#fff;
+  font-size: 4em;
+  text-align: center;
+  float: left;
+  margin-left:17%;
+}
+
+.txt-white-btn{
+    color:#fff;
+}
+
+.roundIcon{
+    width: 115px;
+    height: 115px;
+   padding: 10px;
+   background-color: #1A549C;
+   border: 2px solid #1A549C;
+   border-radius: 60px;
+   -moz-border-radius: 15px;
+   text-align: center;
+}
+
+
+.dark-blue-bg{
+  background-color: #181845;
 }
