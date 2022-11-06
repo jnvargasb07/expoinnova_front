@@ -31,7 +31,7 @@ form{
 }
 
 
-.login-form{
+.login-form{ 
 	width:530px;
 	margin:20px;
 }
@@ -64,6 +64,16 @@ form{
   background-color: rgb(245, 244, 244);
 }
 
+#name{
+  border-radius: 30px 30px;
+  background-color: rgb(245, 244, 244);
+}
+
+#birthdate{
+  border-radius: 30px 30px;
+  background-color: rgb(245, 244, 244);
+}
+
 .box{
 	border: navajowhite;
     box-shadow: 1px 1px 4px 1px lightgrey;
@@ -87,23 +97,19 @@ form{
 }
 
 .bg-gray{
-  background-color: #D1D4DB;
+  background-color: #E9EBEF;
 }
 
 .bg-blue{
-  background-color: #1E6AAC;
+  background-color: #1A549C;
 }
 
 .bg-darkblue{
   background-color: #181845;
 }
 
-.txt-darkblue{
-  color: #181845;
-}
-
 .txt-blue{
-  color: #1E6AAC;
+  color: #1A549C !important;
 }
 
 .txt-white{
@@ -122,19 +128,8 @@ form{
     width: 115px;
     height: 115px;
    padding: 10px;
-   background-color: #1E6AAC;
-   border: 2px solid #1E6AAC;
-   border-radius: 60px;
-   -moz-border-radius: 15px;
-   text-align: center;
-}
-
-.roundIconIntern{
-    width: 60px;
-    height: 60px;
-   padding: 10px;
-   background-color: #1E6AAC;
-   border: 2px solid #1E6AAC;
+   background-color: #1A549C;
+   border: 2px solid #1A549C;
    border-radius: 60px;
    -moz-border-radius: 15px;
    text-align: center;
@@ -146,39 +141,60 @@ form{
 }
 
 
-.tituloFerias{
-  color: #1E6AAC;
 
-/* UI Properties */
-text-align: left;
-letter-spacing: 0px;
-color: #1E6AAC;
-opacity: 1;
+
+
+
+
+
+
+
+
+
+.blue-text-login{
+  color: #1E6AAC !important;
+  text-decoration: none !important;
 }
 
-
-.inputSearch{
-  background-color: #D1D4DB !important;
-  border-radius: 29px;
-  color:#1E6AAC !important;
-  outline: none;
+.blue-button-login{
+  background-color: #1E6AAC !important;
 }
 
-
-.inputSearch:focus{
-    outline: none;
-    border-color: transparent;
+.text-color-recovery{
+  color: #212357 !important;
 }
 
-.inputSearch::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
-  color: #1E6AAC;
-
+.background-button-recovery{
+  background-color: #212357 !important;
 }
 
-.inputSearch:-ms-input-placeholder { /* Internet Explorer 10-11 */
-  color: #1E6AAC;
+.hr-login{
+  color: lightgray !important;
 }
 
-.inputSearch::-ms-input-placeholder { /* Microsoft Edge */
-  color: #1E6AAC;
+.background-profile{
+  background-color: #1E6AAC;
+  padding: 2%;
+}
+
+.letter-profile-user{
+  background-color: #212357;
+  width: 4em;
+  padding: 3%;
+  font-size: 5em;
+}
+
+.radius-letter{
+  border-radius: 100%;
+}
+
+.new-profile-text{
+    background-color: #D1D4DB;
+    padding: 3%;
+    border-radius: 50px;
+}
+
+.decoration-none{
+  text-decoration: none !important;
+  cursor: pointer;
 }

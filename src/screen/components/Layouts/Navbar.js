@@ -27,6 +27,11 @@ function Header() {
     }
     return "Inicio";
   };
+
+  const profile = () => {
+    window.location.href = "/home/profile";
+  }
+
   return (
     <Navbar bg="light" expand="lg">
       <Container fluid>
@@ -59,14 +64,11 @@ function Header() {
               href="#"
               onClick={(e) => e.preventDefault()}
             >
-              <InputGroup className="inputSearch">
-               <i className="nc-icon nc-zoom-split"></i>
+              <InputGroup>
+               <InputGroup.Text id="basic-addon1"><i className="nc-icon nc-zoom-split"></i></InputGroup.Text>
                 <Form.Control
-                  placeholder="Buscar..."
-                  type="text"
-                  className="inputSearch"
-
-                  >
+                  placeholder="Descripción de la feria"
+                  type="text">
                   </Form.Control>
                 </InputGroup>
                 </Nav.Link>
@@ -81,7 +83,8 @@ function Header() {
                   variant="default"
 
                 >
-                  <h3 className="txt-blue"><i className="fas fa-bell"></i></h3>
+                  <i className="nc-icon nc-notification-70"></i>
+                  <span className="d-lg-none ml-1">Notificaciones</span>
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
                   <Dropdown.Item
@@ -106,12 +109,12 @@ function Header() {
                   variant="default"
                   className="m-0"
                 >
-                  <span className="ml-1 txt-blue">John Doe</span>
+                  <span className="ml-1">John Doe</span>
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
                 <Dropdown.Item
                   href="#"
-                  onClick={(e) => e.preventDefault()}
+                  onClick={profile}
                 >
                   Cuenta
                 </Dropdown.Item>

@@ -91,7 +91,7 @@
                 }
 
                 &:hover{
-                    color: #1E6AAC;
+                    color: $info-color;
                 }
             }
 
@@ -262,7 +262,7 @@
         .nav-item .nav-link:not(.btn):focus{
             background-color: transparent;
             border-radius: 3px;
-            color: #1E6AAC;
+            color: $info-color;
             @include opacity(1);
         }
 
@@ -271,7 +271,7 @@
             .nav-link:hover,
             .nav-link:focus{
                 background-color: transparent;
-                color: #1E6AAC;
+                color: $info-color;
             }
         }
 
@@ -283,8 +283,8 @@
     }
 
     &:not(.navbar-transparent) .btn-default:hover{
-        color: #1E6AAC;
-        border-color: #1E6AAC;
+        color: $info-color;
+        border-color: $info-color;
     }
     &:not(.navbar-transparent) .btn-neutral,
     &:not(.navbar-transparent) .btn-neutral:hover,
