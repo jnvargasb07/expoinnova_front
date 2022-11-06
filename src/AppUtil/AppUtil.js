@@ -1,18 +1,19 @@
 import Axios from 'axios';
 const proxy = ""; //"https://cors-anywhere.herokuapp.com/";
-const apiUrl = "https://api.expoinnova.jegsnet.com/api/v1/"
+const apiUrl = "api/v1/" //"https://api.expoinnova.jegsnet.com/api/v1/"
+const token =  sessionStorage.getItem('token');
 const AppUtil = {
 
-  postAPI:async function postAPI(endpoint, dataPost, token = '')
+  postAPI:async function postAPI(endpoint, dataPost)
   {
     try {
 
       let response = await Axios.post(`${endpoint}`, dataPost, {
 
         headers: {
-          Authorization: `Bearer ${token}`,
           'Accept': 'application/json',
           'Content-Type': 'application/json'
+
         }
       });
       let dataRet = response.data;
@@ -24,16 +25,17 @@ const AppUtil = {
       return false;
     }
   },
-  deleteAPI:async function deleteAPI(endpoint, token = '')
+  putAPI:async function putAPI(endpoint, dataPost)
   {
     try {
 
-      let response = await Axios.delete(`${endpoint}`, {
+      let response = await Axios.put(`${endpoint}`, dataPost, {
 
         headers: {
           Authorization: `Bearer ${token}`,
           'Accept': 'application/json',
           'Content-Type': 'application/json'
+
         }
       });
       let dataRet = response.data;
@@ -48,6 +50,7 @@ const AppUtil = {
   getAPI: async function getAPI(endpoint, token = '')
   {
     try {
+
       let response = await Axios.get(`${endpoint}`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -56,7 +59,6 @@ const AppUtil = {
         }
 
       });
-      console.log(response);
       let dataRet = response.data;
       return dataRet;
     }

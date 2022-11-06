@@ -5,22 +5,22 @@ import Home from "./screen/components/Home/Home.js";
 const dashboardRoutes = [
   {
     path: "/",
-    name: "Ferias de negocios",
-    icon: "fas fa-folder",
+    name: "Inicio",
+    icon: "nc-icon nc-chart-pie-35",
     component: Home,
     layout: "/home",
   },
   {
     path: "/users",
-    name: "Crear Nuevo",
-    icon: "fas fa-user-plus",
+    name: "Usuarios",
+    icon: "nc-icon nc-circle-09",
     component: Home,
     layout: "/home",
   },
   {
     path: "/forum",
-    name: "Ajustes",
-    icon: "fas fa-cog",
+    name: "Foro",
+    icon: "nc-icon nc-paper-2",
     component: Home,
     layout: "/home",
   }
