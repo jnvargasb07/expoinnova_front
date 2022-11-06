@@ -1,10 +1,9 @@
 import Axios from 'axios';
 const proxy = ""; //"https://cors-anywhere.herokuapp.com/";
-const apiUrl = "api/v1/" //"https://api.expoinnova.jegsnet.com/api/v1/"
-const token =  sessionStorage.getItem('token');
+const apiUrl = "https://api.expoinnova.jegsnet.com/api/v1/"
 const AppUtil = {
 
-  postAPI:async function postAPI(endpoint, dataPost)
+  postAPI:async function postAPI(endpoint, dataPost, token = '')
   {
     try {
 
@@ -14,7 +13,6 @@ const AppUtil = {
           Authorization: `Bearer ${token}`,
           'Accept': 'application/json',
           'Content-Type': 'application/json'
-
         }
       });
       let dataRet = response.data;
@@ -26,17 +24,16 @@ const AppUtil = {
       return false;
     }
   },
-  putAPI:async function putAPI(endpoint, dataPost)
+  deleteAPI:async function deleteAPI(endpoint, token = '')
   {
     try {
 
-      let response = await Axios.put(`${endpoint}`, dataPost, {
+      let response = await Axios.delete(`${endpoint}`, {
 
         headers: {
           Authorization: `Bearer ${token}`,
           'Accept': 'application/json',
           'Content-Type': 'application/json'
-
         }
       });
       let dataRet = response.data;
@@ -48,10 +45,9 @@ const AppUtil = {
       return false;
     }
   },
-  getAPI: async function getAPI(endpoint)
+  getAPI: async function getAPI(endpoint, token = '')
   {
     try {
-
       let response = await Axios.get(`${endpoint}`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -60,27 +56,7 @@ const AppUtil = {
         }
 
       });
-      let dataRet = response.data;
-      return dataRet;
-    }
-    catch (e)
-    {
-      console.error(e);
-      return false;
-    }
-  },
-  deleteAPI: async function deleteAPI(endpoint)
-  {
-    try {
-
-      let response = await Axios.delete(`${endpoint}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Accept': 'application/json',
-          'Content-Type': 'application/json; charset=UTF-8'
-        }
-
-      });
+      console.log(response);
       let dataRet = response.data;
       return dataRet;
     }

@@ -44,7 +44,7 @@ body > .navbar-collapse{
             float: left;
             font-size: 20px;
             margin: 10px 10px;
-            color: $white-color;
+            color: #1E6AAC;
             line-height: 20px;
             font-family:"PromptMedium", "Helvetica Neue", Helvetica, Arial, sans-serif;
         }
@@ -54,27 +54,14 @@ body > .navbar-collapse{
             padding: $padding-small-vertical $padding-zero;
             display: block;
             font-size: $font-size-large;
-            color: $white-color;
+            color: #1E6AAC;
             text-align: center;
             font-weight: $font-weight-normal;
             line-height: 30px;
         }
     }
 
-    .logo-tim{
-        border-radius: 50%;
-        border: 1px solid #333;
-        display: block;
-        height: 61px;
-        width: 61px;
-        float: left;
-        overflow: hidden;
 
-        img{
-            width: 60px;
-            height: 60px;
-        }
-    }
 
     .nav{
         margin-top: 20px;
@@ -83,7 +70,7 @@ body > .navbar-collapse{
 
         li{
             .nav-link{
-                color: $white-color;
+                color: #1E6AAC;
                 margin: 5px 15px;
                 opacity: .86;
                 border-radius: 4px;
@@ -120,9 +107,10 @@ body > .navbar-collapse{
             }
 
             &.active .nav-link{
-                color: $white-color;
+                color: #fff;
                 opacity: 1;
-                background: rgba(255,255,255,0.23);
+                background: #1E6AAC;
+                border-radius: 60px;
 
             }
 
@@ -151,13 +139,13 @@ body > .navbar-collapse{
             bottom: 10px;
 
             a{
-                color: $white-color !important;
+                color: #1E6AAC !important;
 
             }
         }
 
         .nav-link{
-            color: $white-color;
+            color: #1E6AAC;
             margin: 5px 15px;
             opacity: .86;
             border-radius: 4px;
@@ -176,7 +164,7 @@ body > .navbar-collapse{
             float: left;
             font-size: 20px;
             margin: 10px 10px;
-            color: $white-color;
+            color: #1E6AAC;
             line-height: 20px;
             font-family: "PromptMedium", "Helvetica Neue", Helvetica, Arial, sans-serif;
         }
@@ -186,27 +174,14 @@ body > .navbar-collapse{
             padding: $padding-small-vertical $padding-zero;
             display: block;
             font-size: $font-size-large;
-            color: $white-color;
+            color: #1E6AAC;
             text-align: center;
             font-weight: $font-weight-normal;
             line-height: 30px;
         }
     }
 
-    .logo-tim{
-        border-radius: 50%;
-        border: 1px solid #333;
-        display: block;
-        height: 61px;
-        width: 61px;
-        float: left;
-        overflow: hidden;
 
-        img{
-            width: 60px;
-            height: 60px;
-        }
-    }
 
     &:after,
     &:before{
@@ -226,7 +201,7 @@ body > .navbar-collapse{
     }
 
     &:after{
-       @include icon-gradient($new-purple, $purple-color-bottom);
+       @include icon-gradient(#FAFBFC, #FAFBFC);
        z-index: 3;
        opacity: 1;
     }

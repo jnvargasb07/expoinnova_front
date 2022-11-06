@@ -3,7 +3,6 @@ import React, {Component} from "react";
 import axios from "axios";
 import { url } from "../services/api";
 import logo from "../../../assets/img/logo.png";
-import crypto from "crypto-js";
 
 class Login extends Component {
   constructor(props) {
@@ -37,43 +36,41 @@ class Login extends Component {
   };
 
   //se maneja la autenticacion del usuario
-  login = () => {
-    
+  login = async () => {
     if (this.state.form.email !== "" && this.state.form.password !== "") {
       let url_api = url + "login";
       console.log(this.state.form);
-      axios
-        .post(url_api, this.state.form)
-        .then((response) => {
-          console.log(response.data.user);
-          if (response.status === 200) {
-            console.log(response.data.user)
-            //se guarda el usuario en session
-            //y se encripta la informacion del usuario
-            let user = crypto.AES.encrypt(JSON.stringify(response.data.user), "@virtual_cr").toString();
-            sessionStorage.setItem('token', response.data.access_token);
-            sessionStorage.setItem('user', user);
-            //se redirecciona a main
-            // this.props.history.push("/admin");
-            window.location.href = "/home/";
-          } else {
+      await axios
+          .post(url_api, this.state.form,{
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+
+            }
+          })
+          .then((response) => {
+            if (response.status === 200) {
+              if(response.data.access_token != null) {
+                //se guarda el usuario en session
+                sessionStorage.setItem('token', response.data.access_token);
+                sessionStorage.setItem('user', response.data.user);
+                //se redirecciona a main
+                // this.props.history.push("/admin");
+                window.location.href = "/home/";
+              }
+            } else {
+              this.setState({
+                error: true,
+                errorMsg: "Usuario o contraseña incorrectos",
+              });
+            }
+          })
+          .catch((error) => {
             this.setState({
               error: true,
-              errorMsg: "Usuario o contraseña incorrectos",
+              errorMsg: "Ha ocurrido un problema favor intentelo nuevamente",
             });
-          }
-        })
-        .catch((error) => {
-          this.setState({
-            error: true,
-            errorMsg: "Ha ocurrido un problema favor intentelo nuevamente",
           });
-        });
-    }else{
-      this.setState({
-        error: true,
-        errorMsg: "Todos los campos son requeridos",
-      });
     }
   };
 
@@ -82,14 +79,10 @@ class Login extends Component {
       <div className="global-container m-0 vh-100 row justify-content-center align-items-center">
         <div className="card login-form box">
           <div className="card-body">
-            <div className="text-center m-5">
-              <img src={logo} alt="Logo"/>
-            </div>
-            <h4 className="card-title text-center blue-text-login">
-              Iniciar sesión en ExpoInnova
-            </h4>
-            <br></br>
-            <hr className="hr-login"></hr>
+            <img src={logo} alt="Logo"/>
+            <h3 className="card-title text-center">
+              Iniciar Sesión en ExpoInnova
+            </h3>
             {this.state.error === true && (
               <div className="alert alert-danger" role="alert">
                 {this.state.errorMsg}
@@ -99,7 +92,7 @@ class Login extends Component {
               {/* <div className="alert alert-danger alert-dismissible fade show" role="alert">Incorrect username or password.</div> */}
               <form onSubmit={this.preventSubmit}>
                 <div className="form-group">
-                  <label htmlFor="exampleInputEmail1" className="text-color-recovery">
+                  <label htmlFor="exampleInputEmail1">
                     Direccion de correo electronico
                   </label>
                   <input
@@ -113,7 +106,7 @@ class Login extends Component {
                   />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="exampleInputPassword1" className="text-color-recovery">Password</label>
+                  <label htmlFor="exampleInputPassword1">Password</label>
                   <input
                     type="password"
                     className="form-control form-control-sm"
@@ -123,18 +116,17 @@ class Login extends Component {
                     onChange={this.getInputData}
                   />
                 </div>
-                <div className="d-flex justify-content-center">
                 <button
                   type="submit"
                   id="action-btn"
-                  className="btn btn-primary btn-block blue-button-login col-sm-12 col-md-12 col-xs-12 w-100"
+                  className="btn btn-primary btn-block col-md-12"
                   onClick={this.login}
                 >
                   Iniciar Sesión
                 </button>
-                </div>
+
                 <div className="sign-up">
-                  ¿Olvido su contraseña? <a href="/recovery" className="blue-text-login">Recuperar</a>
+                  ¿Olvido su contraseña? <a href="/recovery">Recuperar</a>
                 </div>
               </form>
             </div>
