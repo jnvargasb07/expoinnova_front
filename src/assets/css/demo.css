@@ -87,7 +87,7 @@ form{
 }
 
 .bg-gray{
-  background-color: #E9EBEF;
+  background-color: #D1D4DB;
 }
 
 .bg-blue{
@@ -122,8 +122,19 @@ form{
     width: 115px;
     height: 115px;
    padding: 10px;
-   background-color: #1A549C;
-   border: 2px solid #1A549C;
+   background-color: #1E6AAC;
+   border: 2px solid #1E6AAC;
+   border-radius: 60px;
+   -moz-border-radius: 15px;
+   text-align: center;
+}
+
+.roundIconIntern{
+    width: 60px;
+    height: 60px;
+   padding: 10px;
+   background-color: #1E6AAC;
+   border: 2px solid #1E6AAC;
    border-radius: 60px;
    -moz-border-radius: 15px;
    text-align: center;

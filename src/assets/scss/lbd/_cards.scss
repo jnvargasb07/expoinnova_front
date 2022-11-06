@@ -1,6 +1,6 @@
 .card{
     border-radius: $border-radius-base;
-    background: #D1D4DB 0% 0% no-repeat padding-box;
+    background-color: $white-color;
     margin-bottom: 30px;
     border:none !important;
 
@@ -257,17 +257,18 @@
 
 .folder{
    cursor: pointer;
-   background: #D1D4DB 0% 0% no-repeat padding-box;
+   background: rgba(209, 212, 219, .16) 0% 0% no-repeat padding-box;
    width: 100%;
    height: 150px;
    border-radius: 10px;
+    margin:1em;
    //folder label
    &:before {
-     width: 30%;
+     width: 40%;
      height: 25px;
      border-radius: 5px;
      content: '';
-     background: #D1D4DB 0% 0% no-repeat padding-box;
+     background: rgba(209, 212, 219, .16) 0% 0% no-repeat padding-box;
      position: absolute;
      top: -10px;
      left: 0px;
@@ -280,7 +281,7 @@
      border-radius: 10px;
      content: '';
      transform: skew(0deg);
-     background: #D1D4DB 0% 0% no-repeat padding-box;
+     background: rgba(209, 212, 219, .16) 0% 0% no-repeat padding-box;
      transition: all .2s;
    }
 

@@ -36,36 +36,41 @@ class Login extends Component {
   };
 
   //se maneja la autenticacion del usuario
-  login = () => {
-    debugger
+  login = async () => {
     if (this.state.form.email !== "" && this.state.form.password !== "") {
       let url_api = url + "login";
       console.log(this.state.form);
-      axios
-        .post(url_api, this.state.form)
-        .then((response) => {
-          console.log(response.data.user);
-          if (response.status === 200) {
+      await axios
+          .post(url_api, this.state.form,{
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
 
-            //se guarda el usuario en session
-            sessionStorage.setItem('token', response.data.access_token);
-            sessionStorage.setItem('user', response.data.user);
-            //se redirecciona a main
-            // this.props.history.push("/admin");
-            window.location.href = "/home/";
-          } else {
+            }
+          })
+          .then((response) => {
+            if (response.status === 200) {
+              if(response.data.access_token != null) {
+                //se guarda el usuario en session
+                sessionStorage.setItem('token', response.data.access_token);
+                sessionStorage.setItem('user', response.data.user);
+                //se redirecciona a main
+                // this.props.history.push("/admin");
+                window.location.href = "/home/";
+              }
+            } else {
+              this.setState({
+                error: true,
+                errorMsg: "Usuario o contraseña incorrectos",
+              });
+            }
+          })
+          .catch((error) => {
             this.setState({
               error: true,
-              errorMsg: "Usuario o contraseña incorrectos",
+              errorMsg: "Ha ocurrido un problema favor intentelo nuevamente",
             });
-          }
-        })
-        .catch((error) => {
-          this.setState({
-            error: true,
-            errorMsg: "Ha ocurrido un problema favor intentelo nuevamente",
           });
-        });
     }
   };
 
