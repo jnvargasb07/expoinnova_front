@@ -1,5 +1,0 @@
-{
-  "name":"AppUtil",
-  "main":"./index.js",
-  "exports": { ".": { "browser": { "default": "./index.js" } } }
-}
