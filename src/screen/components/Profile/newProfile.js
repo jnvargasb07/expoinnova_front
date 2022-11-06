@@ -140,13 +140,14 @@ class NewProfile extends Component {
         this.setState({
           error: true,
           errorMsg: "El estudiante se guardo exitosamente",
-          color: "alert alert-success"
+          color: "alert alert-success", 
         });
         setTimeout(() => {
           this.setState({
             error: false,
             errorMsg: "",
-            color: ""
+            color: "",
+            showStudent:false
           });
         }, "4000");
       } else {
@@ -180,7 +181,8 @@ class NewProfile extends Component {
           this.setState({
             error: false,
             errorMsg: "",
-            color: ""
+            color: "",
+            showJudge:false
           });
         }, "4000");
       } else {
@@ -223,6 +225,13 @@ class NewProfile extends Component {
       if (response.success) {
         this.getProfessorData();
         this.setState({
+          form: {
+            name: "",
+            email: "",
+            campus_id: 0,
+            professors_users_id: 0,
+            password: ""
+          },
           error: true,
           errorMsg: "El profesor se guardo exitosamente",
           color: "alert alert-success"
@@ -231,7 +240,8 @@ class NewProfile extends Component {
           this.setState({
             error: false,
             errorMsg: "",
-            color: ""
+            color: "",
+            showProfessor:false
           });
         }, "4000");
       } else {
@@ -282,7 +292,8 @@ class NewProfile extends Component {
           this.setState({
             error: false,
             errorMsg: "",
-            color: ""
+            color: "",
+            showCampus:false
           });
         }, "4000");
       } else {
@@ -333,7 +344,8 @@ class NewProfile extends Component {
           this.setState({
             error: false,
             errorMsg: "",
-            color: ""
+            color: "",
+            showCategories:false
           });
         }, "4000");
       } else {

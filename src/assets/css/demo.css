@@ -64,6 +64,16 @@ form{
   background-color: rgb(245, 244, 244);
 }
 
+#name{
+  border-radius: 30px 30px;
+  background-color: rgb(245, 244, 244);
+}
+
+#birthdate{
+  border-radius: 30px 30px;
+  background-color: rgb(245, 244, 244);
+}
+
 .box{
 	border: navajowhite;
     box-shadow: 1px 1px 4px 1px lightgrey;
@@ -145,7 +155,6 @@ form{
   background-color: #181845;
 }
 
-
 .tituloFerias{
   color: #1E6AAC;
 
@@ -181,4 +190,53 @@ opacity: 1;
 
 .inputSearch::-ms-input-placeholder { /* Microsoft Edge */
   color: #1E6AAC;
+}
+
+
+.blue-text-login{
+  color: #1E6AAC !important;
+  text-decoration: none !important;
+}
+
+.blue-button-login{
+  background-color: #1E6AAC !important;
+}
+
+.text-color-recovery{
+  color: #212357 !important;
+}
+
+.background-button-recovery{
+  background-color: #212357 !important;
+}
+
+.hr-login{
+  color: lightgray !important;
+}
+
+.background-profile{
+  background-color: #1E6AAC;
+  padding: 2%;
+}
+
+.letter-profile-user{
+  background-color: #212357;
+  width: 4em;
+  padding: 3%;
+  font-size: 5em;
+}
+
+.radius-letter{
+  border-radius: 100%;
+}
+
+.new-profile-text{
+    background-color: #D1D4DB;
+    padding: 3%;
+    border-radius: 50px;
+}
+
+.decoration-none{
+  text-decoration: none !important;
+  cursor: pointer;
 }

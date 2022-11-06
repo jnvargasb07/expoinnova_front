@@ -7,6 +7,8 @@ import Sidebar from "./screen/components/Layouts/Header";
 import FairDetail from './screen/components/Home/FairDetail';
 import IdeaDetail from './screen/components/Home/IdeaDetail';
 import Home from "./screen/components/Home/Home.js";
+import Profile from "./screen/components/Profile/profile";
+import NewProfile from "./screen/components/Profile/newProfile";
 
 import routes from "./routes.js";
 
@@ -65,7 +67,10 @@ function Admin() {
             <div className="content">
               <Routes>
               {getRoutes(routes)}
-                <Route
+
+                <Route path={'/profile'} element={<Profile />} />
+                <Route path={'/new-profile'} element={<NewProfile />} />
+                               <Route
                   path={'/fairdetail/:id'}
                   element={<FairDetail navigate={navigation} params={params} location={location}  />}
                   />

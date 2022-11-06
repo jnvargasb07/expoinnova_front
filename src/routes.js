@@ -9,13 +9,14 @@ const dashboardRoutes = [
     icon: "fas fa-folder",
     component: Home,
     layout: "/home",
+
   },
   {
-    path: "/users",
+    path: "/",
     name: "Crear Nuevo",
     icon: "fas fa-user-plus",
     component: Home,
-    layout: "/home",
+    layout: "/home/new-profile",
   },
   {
     path: "/forum",
