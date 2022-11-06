@@ -47,7 +47,7 @@ const AppUtil = {
       return false;
     }
   },
-  getAPI: async function getAPI(endpoint, token = '')
+  getAPI: async function getAPI(endpoint)
   {
     try {
 
