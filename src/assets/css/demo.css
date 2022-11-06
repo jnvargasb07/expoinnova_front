@@ -31,7 +31,7 @@ form{
 }
 
 
-.login-form{ 
+.login-form{
 	width:530px;
 	margin:20px;
 }
@@ -91,15 +91,19 @@ form{
 }
 
 .bg-blue{
-  background-color: #1A549C;
+  background-color: #1E6AAC;
 }
 
 .bg-darkblue{
   background-color: #181845;
 }
 
+.txt-darkblue{
+  color: #181845;
+}
+
 .txt-blue{
-  color: #1A549C;
+  color: #1E6AAC;
 }
 
 .txt-white{
@@ -128,4 +132,42 @@ form{
 
 .dark-blue-bg{
   background-color: #181845;
+}
+
+
+.tituloFerias{
+  color: #1E6AAC;
+
+/* UI Properties */
+text-align: left;
+letter-spacing: 0px;
+color: #1E6AAC;
+opacity: 1;
+}
+
+
+.inputSearch{
+  background-color: #D1D4DB !important;
+  border-radius: 29px;
+  color:#1E6AAC !important;
+  outline: none;
+}
+
+
+.inputSearch:focus{
+    outline: none;
+    border-color: transparent;
+}
+
+.inputSearch::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+  color: #1E6AAC;
+
+}
+
+.inputSearch:-ms-input-placeholder { /* Internet Explorer 10-11 */
+  color: #1E6AAC;
+}
+
+.inputSearch::-ms-input-placeholder { /* Microsoft Edge */
+  color: #1E6AAC;
 }

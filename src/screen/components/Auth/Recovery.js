@@ -1,23 +1,24 @@
-import React from "react";
-import { useNavigate } from 'react-router-dom';
+import React, {Component} from "react";
+
 
 import axios from "axios";
 import { url } from "../services/api";
 
-class Recovery extends React.Component {
+class Recovery extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+      form: {
+        email: "",
+        verification_code: ""
+      },
+      error: false,
+      errorMsg: "",
+      nextPage: false,
+    };
   }
 
-  state = {
-    form: {
-      email: "",
-      verification_code: ""
-    },
-    error: false,
-    errorMsg: "",
-    nextPage: false,
-  };
+
 
   //previene que recargue pagina
   //cuando se da boton iniciar sesion
@@ -124,7 +125,7 @@ class Recovery extends React.Component {
                   {/* <div className="alert alert-danger alert-dismissible fade show" role="alert">Incorrect username or password.</div> */}
                   <form onSubmit={this.preventSubmit}>
                     <div className="form-group">
-                      <label for="exampleInputEmail1">
+                      <label htmlFor="exampleInputEmail1">
                         Direccion de correo electrónico
                       </label>
                       <input
@@ -162,7 +163,7 @@ class Recovery extends React.Component {
                     </div>
                   }
                 <div className="form-group">
-                      <label for="exampleInputEmail1">
+                      <label htmlFor="exampleInputEmail1">
                         Código de verificación
                       </label>
                       <input

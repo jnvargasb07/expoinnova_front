@@ -16,16 +16,18 @@ function Admin() {
   const getRoutes = (routes) => {
     return routes.map((prop, key) => {
 
-      if (prop.path === "/") {
+      if (prop.layout === "/home") {
 
         return (
           <Route
-            path={prop.layout + prop.path}
+            path={prop.path}
             key={key}
             element={<prop.component />}
           />
         );
-      } else {
+      }
+      else
+      {
         return null;
       }
     });
@@ -43,24 +45,33 @@ function Admin() {
       element.parentNode.removeChild(element);
     }
   }, [location]);
-  return (
-    <>
-      <div className="wrapper">
-        <Sidebar color={'black'} routes={routes} />
-        <div className="main-panel" ref={mainPanel}>
-            <AdminNavbar />
-          <div className="content">
-            <Routes>
-              {getRoutes(routes)}
-              <Route path={'/home/fairdetail/:id'} element={<FairDetail />} />
-            </Routes>
-          </div>
-          <Footer />
-        </div>
-      </div>
 
-    </>
-  );
+//  {getRoutes(routes)}
+/*    <Route
+      path={'/home'}
+
+      element={<Home />}
+    />*/
+    return (
+      <>
+        <div className="wrapper">
+          <Sidebar color={'white'} routes={routes} />
+          <div className="main-panel" ref={mainPanel}>
+              <AdminNavbar />
+            <div className="content">
+              <Routes>
+              {getRoutes(routes)}
+                <Route path={'/fairdetail/:id'} element={<FairDetail />} />
+              </Routes>
+            </div>
+            <Footer />
+          </div>
+        </div>
+      </>
+    );
+
+
+
 }
 
 export default Admin;

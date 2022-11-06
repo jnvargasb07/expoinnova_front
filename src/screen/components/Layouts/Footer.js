@@ -9,22 +9,22 @@ class Footer extends Component {
           <nav>
             <ul className="footer-menu">
               <li>
-                <a href="#" onClick={(e) => e.preventDefault()}>
+                <a href="/" onClick={(e) => e.preventDefault()}>
                   Inicio
                 </a>
               </li>
               <li>
-                <a href="#" onClick={(e) => e.preventDefault()}>
+                <a href="/home" onClick={(e) => e.preventDefault()}>
                   Feria
                 </a>
               </li>
               <li>
-                <a href="#" onClick={(e) => e.preventDefault()}>
+                <a href="/forum" onClick={(e) => e.preventDefault()}>
                   Foro
                 </a>
               </li>
               <li>
-                <a href="#" onClick={(e) => e.preventDefault()}>
+                <a href="/users" onClick={(e) => e.preventDefault()}>
                   Usuarios
                 </a>
               </li>

@@ -1,7 +1,7 @@
 import React from "react";
-import ReactDOM from "react-dom";
+import {createRoot} from "react-dom/client";
 
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./assets/css/animate.min.css";
@@ -15,18 +15,30 @@ import Recovery from "./screen/components/Auth/Recovery";
 import ChangePassword from "./screen/components/Auth/ChangePassword";
 
 //  <Route path="/admin" element={ <Navigate replace to="/admin" />}  />
-ReactDOM.render(
+
+const root = createRoot(document.getElementById("root"));
+root.render(
   <BrowserRouter>
     <Routes>
-      <Route path="/" element={ <Login />}  />
-      <Route path="/recovery" element={ <Recovery />}  />
-      <Route path="/change-password" element={ <ChangePassword /> } />
-      <Route path="*" element={<AdminLayout />} />
+      <Route path="/" exact element={ <Login />}  />
+      <Route path="/recovery" exact element={ <Recovery />}  />
+      <Route path="/change-password" exact element={ <ChangePassword /> } />
+      {
+        (sessionStorage.getItem('token') === null ? <Route path="/home/*" element={ <Navigate replace to="/" />}  /> :<Route path="/home/*" element={<AdminLayout />} /> )
+
+      }
+
 
     </Routes>
   </BrowserRouter>,
-  document.getElementById("root")
+
 );
 
-/*      <Route path="/users/*" element={<AdminLayout />} />
-      <Route path="/forum/*" element={<AdminLayout />} />*/
+/*
+{
+  (sessionStorage.getItem('token') === null ? <Route path="/home" element={ <Navigate replace to="/" />}  /> : )
+
+}
+
+
+*/

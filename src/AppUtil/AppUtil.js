@@ -1,19 +1,18 @@
 import Axios from 'axios';
 const proxy = ""; //"https://cors-anywhere.herokuapp.com/";
-const apiUrl = "https://api-expoinnova.jegsnet.com/api/v1/" //"https://pxdev1.com/mamiferos-acuaticos/wp-json/v1/";
-
+const apiUrl = "https://api.expoinnova.jegsnet.com/api/v1/"
 const AppUtil = {
 
   postAPI:async function postAPI(endpoint, dataPost)
   {
     try {
 
-      let response = await Axios.post(`${proxy}${apiUrl}${endpoint}`, dataPost, {
+      let response = await Axios.post(`${endpoint}`, dataPost, {
 
         headers: {
           'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
+          'Content-Type': 'application/json'
+
         }
       });
       let dataRet = response.data;
@@ -29,10 +28,11 @@ const AppUtil = {
   {
     try {
 
-      let response = await Axios.get(`${proxy}${apiUrl}${endpoint}`, {
+      let response = await Axios.get(`${endpoint}`, {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
+          'Accept': 'application/json',
+          'Content-Type': 'application/json; charset=UTF-8'
         }
 
       });
@@ -56,12 +56,12 @@ const AppUtil = {
         console.error(e);
         return false;
       }
-  },
+  }/*
   isEmail: function isEmail(email)
   {
     var emailformat = /^[a-z0-9]+(\.[_a-z0-9]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,15})$/;
     return emailformat.test(email);
-  }
+  }*/
 }
 
 
