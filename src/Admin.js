@@ -5,6 +5,7 @@ import AdminNavbar from "./screen/components/Layouts/Navbar";
 import Footer from "./screen/components/Layouts/Footer";
 import Sidebar from "./screen/components/Layouts/Header";
 import FairDetail from './screen/components/Home/FairDetail';
+import IdeaDetail from './screen/components/Home/IdeaDetail';
 import Home from "./screen/components/Home/Home.js";
 
 import routes from "./routes.js";
@@ -67,7 +68,11 @@ function Admin() {
                 <Route
                   path={'/fairdetail/:id'}
                   element={<FairDetail navigate={navigation} params={params} location={location}  />}
-            />
+                  />
+                  <Route
+                    path={'/fairdetail/idea/:id'}
+                    element={<IdeaDetail navigate={navigation} params={params} location={location}  />}
+                    />
               </Routes>
             </div>
             <Footer />

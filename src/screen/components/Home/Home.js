@@ -20,7 +20,7 @@ import AppUtil from '../../../AppUtil/AppUtil.js';
 import moment from "moment";
 import 'moment/locale/es';
 
-import { url } from "../services/api";
+import { url, fairDescription } from "../services/api";
 
  class Home extends Component {
   constructor(props)
@@ -30,16 +30,34 @@ import { url } from "../services/api";
       show: false,
       showDelete:false,
       post:[],
-      key:'info'
+      key:'info',
+      form:{
+        name:"",
+        description:"",
+        category:"",
+        start_date:"",
+        end_date:"",
+        options_comments:false
+      }
     }
   }
+
+  getInputData = async (e) => {
+    console.log(e);
+    await this.setState({
+      form: {
+        ...this.state.form,
+        [e.target.name]: e.target.value,
+      },
+    });
+  };
 
 
   componentWillMount()
   {
 
-      let url_api = url + "fairs";
-    AppUtil.getAPI(url_api, sessionStorage.getItem('token')).then(responseFair => {
+
+    AppUtil.getAPI(`${url}fairs`, sessionStorage.getItem('token')).then(responseFair => {
 
       let post = responseFair ? responseFair.data : [];
       this.setState({post});
@@ -50,6 +68,35 @@ import { url } from "../services/api";
 
   toggleDelete = () => this.setState({showDelete: !this.state.showDelete});
   toggleShow = () => this.setState({show: !this.state.show})
+
+
+  submitFair = () =>{
+    let {form} = this.state;
+    let validate = /^(?!\s*$)[a-zA-Z.+\s'-]+$/
+  /*  name:"",
+    description:"",
+    category:"",
+    start_date:"",
+    end_date:"",
+    options_comments:false*/
+
+    console.log('name', validate.test(form.name));
+        console.log('desc', validate.test(form.description));
+        console.log('category',validate.test(form.category));
+        console.log('start_date',validate.test(form.start_date));
+        console.log('end_date',validate.test(form.end_date));
+    if (validate.test(form.name) && validate.test(form.description) && validate.test(form.category))
+    {
+        AppUtil.postAPI(`${url}${fairDescription}`, form).then(response => {
+          console.log(response);
+
+        })
+        return ;
+    }
+
+    console.log("llene los campos no sea estupido");
+
+  }
 
 render() {
   let {show, showDelete, post, key} = this.state;
@@ -139,7 +186,10 @@ render() {
                <Form.Group>
                  <Form.Control
                     placeholder="Nombre de la feria de negocios"
-                    type="text">
+                    type="text"
+                    onChange={this.getInputData}
+                    name="name"
+                    >
                    </Form.Control>
                </Form.Group>
                </Col>
@@ -152,7 +202,10 @@ render() {
                 <Form.Group>
                   <Form.Control
                      placeholder="Categoría"
-                     type="text">
+                     type="text"
+                     onChange={this.getInputData}
+                     name="category"
+                      >
                     </Form.Control>
                 </Form.Group>
                 </Col>
@@ -161,7 +214,10 @@ render() {
                    <Form.Group>
                      <Form.Control
                        placeholder="Fecha de inicio"
-                       type="date">
+                       type="date"
+                       name="start_date"
+                       onChange={this.getInputData}
+                       >
                      </Form.Control>
                    </Form.Group>
                  </Col>
@@ -172,7 +228,10 @@ render() {
                  <Form.Group>
                    <Form.Control
                       placeholder="Fecha de fin"
-                      type="date">
+                      type="date"
+                      name="end_date"
+                      onChange={this.getInputData}
+                      >
                      </Form.Control>
                  </Form.Group>
                  </Col>
@@ -187,6 +246,9 @@ render() {
                        placeholder="Descripción de la feria"
                        as="textarea"
                        style={{ height: '100px' }}
+
+                       name="description"
+                       onChange={this.getInputData}
                        >
                       </Form.Control>
                   </Form.Group>
@@ -202,6 +264,7 @@ render() {
                     type="switch"
                     id="foro-preguntas"
                     label="Foro de preguntas y respuestas de los diferentes usuarios"
+                    name="options_comments"
                   />
                   </Form.Group>
                 </Col>
@@ -213,54 +276,20 @@ render() {
                      type="switch"
                      id="fechas-foro"
                      label="Fechas de respuesta de foro"
+                     onChange={this.getInputData}
+                     name="forum_dates"
                    />
                    </Form.Group>
                  </Col>
                </Row>
-
-               <Row>
-                 <Col sm="12" xl="12">
-                  <Form.Group>
-                    <Form.Check
-                      type="switch"
-                      id="foro"
-                      label="Foro"
-                    />
-                    </Form.Group>
-                  </Col>
-                </Row>
-
-                <Row>
-                  <Col sm="12" xl="12">
-                   <Form.Group>
-                     <Form.Check
-                       type="switch"
-                       id="ideas-negocio"
-                       label="Ideas de negocios"
-                     />
-                     </Form.Group>
-                   </Col>
-                 </Row>
-                 <Row>
-                   <Col sm="12" xl="12">
-                    <Form.Group>
-                      <Form.Check
-                        type="switch"
-                        id="evaluacion"
-                        label="Evaluación"
-                      />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-
            </Tab>
          </Tabs>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="light" onClick={this.toggleShow}>
+            <Button variant="light" className="btn-rounded" onClick={this.toggleShow}>
               Cerrar
             </Button>
-            <Button variant="success" className="btn-fill">Guardar</Button>
+            <Button variant="primary" className="btn-fill btn-rounded" onClick={this.submitFair}>Guardar</Button>
           </Modal.Footer>
         </Modal>
 
