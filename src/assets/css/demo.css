@@ -109,7 +109,7 @@ form{
 }
 
 .txt-blue{
-  color: #1A549C;
+  color: #1A549C !important;
 }
 
 .txt-white{
@@ -192,4 +192,9 @@ form{
     background-color: #D1D4DB;
     padding: 3%;
     border-radius: 50px;
+}
+
+.decoration-none{
+  text-decoration: none !important;
+  cursor: pointer;
 }

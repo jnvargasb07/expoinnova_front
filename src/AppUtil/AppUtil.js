@@ -11,6 +11,7 @@ const AppUtil = {
       let response = await Axios.post(`${endpoint}`, dataPost, {
 
         headers: {
+          Authorization: `Bearer ${token}`,
           'Accept': 'application/json',
           'Content-Type': 'application/json'
 
@@ -52,6 +53,27 @@ const AppUtil = {
     try {
 
       let response = await Axios.get(`${endpoint}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json; charset=UTF-8'
+        }
+
+      });
+      let dataRet = response.data;
+      return dataRet;
+    }
+    catch (e)
+    {
+      console.error(e);
+      return false;
+    }
+  },
+  deleteAPI: async function deleteAPI(endpoint)
+  {
+    try {
+
+      let response = await Axios.delete(`${endpoint}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Accept': 'application/json',
