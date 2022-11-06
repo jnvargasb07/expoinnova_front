@@ -12,13 +12,17 @@ import {
   Modal,
   Tabs,
   Tab,
-  Dropdown
+  Nav,
+  Dropdown,
+  re
 } from "react-bootstrap";
 import AppUtil from '../../../AppUtil/AppUtil.js';
-import Moment from 'react-moment';
-import 'moment-timezone';
-import { url } from "../services/api";
-import crypto from "crypto-js";
+import Toast from '../common/Toast.js';
+
+import moment from "moment";
+import 'moment/locale/es';
+
+import { url, fairDescription } from "../services/api";
 
  class Home extends Component {
   constructor(props)
@@ -29,44 +33,132 @@ import crypto from "crypto-js";
       showDelete:false,
       post:[],
       key:'info',
-      user:""
+      form:{
+        name:"",
+        description:"",
+        category:"",
+        start_date:"",
+        end_date:"",
+        options_comments:false
+      },
+      alert:{
+        show:false,
+        variant:'success',
+        title:"",
+        body:""
+      },
+      id:0
     }
   }
 
+  getInputData = async (e) => {
 
-  componentWillMount()
+    await this.setState({
+      form: {
+        ...this.state.form,
+        [e.target.name]: e.target.value,
+      },
+    });
+  };
+
+
+  _loadFairs = () =>
   {
-
-      let url_api = url + "fairs";
-    AppUtil.getAPI(url_api, sessionStorage.getItem('token')).then(responseFair => {
+    AppUtil.getAPI(`${url}fairs`, sessionStorage.getItem('token')).then(responseFair => {
 
       let post = responseFair ? responseFair.data : [];
       this.setState({post});
     });
-    //se desencripta la informacion del usuario para ser utilizada
-    let bytes = crypto.AES.decrypt(sessionStorage.getItem('user'), "@virtual_cr");
-    this.user = JSON.parse(bytes.toString(crypto.enc.Utf8));
   }
+
+  componentWillMount() { this._loadFairs(); }
 
   setKey = (key) => this.setState({key});
 
-  toggleDelete = () => this.setState({showDelete: !this.state.showDelete});
+  toggleDelete = (id = 0) => this.setState({showDelete: !this.state.showDelete, id});
+  toggleShow = () => this.setState({show: !this.state.show})
 
+  deleteFair = () =>{
+    let {id} = this.state;
+    if (id > 0)
+    {
+      AppUtil.deleteAPI(`${url}fairs/${id}`, sessionStorage.getItem('token')).then(response => {
+
+        if (response.success)
+        {
+            let alert = {
+              show:true,
+              variant:'success',
+              title:"Feria eliminada",
+              body:"Feria de negocio eliminada satisfactoriamente"
+            }
+            this.setState({alert}, () => {
+              this.toggleDelete(0);
+              this._loadFairs();
+            });
+            return ;
+        }
+
+        let alert = {
+          show:true,
+          variant:'warning',
+          title:"Feria no eliminada",
+          body:"La feria no se pudo eliminar, por favor intente más tarde"
+        }
+        this.setState({alert});
+
+      })
+    }
+
+  }
+  submitFair = () =>{
+    let {form} = this.state;
+
+    if (form.name.trim() !== "" && form.description.trim() !== "" && form.category.trim() !== "")
+    {
+        AppUtil.postAPI(`${url}fairs`, form, sessionStorage.getItem('token')).then(response => {
+          if (response.success)
+          {
+            let alert = {
+              show:true,
+              variant:'success',
+              title:"Feria creada",
+              body:"Feria de negocio creada satisfactoriamente"
+            }
+            this.setState({alert}, () => {
+              this.toggleShow();
+              this._loadFairs();
+            });
+            return ;
+          }
+          let alert = {
+            show:true,
+            variant:'danger',
+            title:"Error al crear la feria",
+            body:"No se pudo crear la feria, por favor intente más tarde"
+          }
+        })
+    }
+
+
+
+  }
 
 render() {
-  let {show, showDelete, post, key} = this.state;
+  let {show, showDelete, post, key, alert} = this.state;
   return (
     <>
+    <Toast onClose={()=> this.setState({alert:{show:false}} )} variant={alert.variant} show={alert.show} title={alert.title} body={alert.body}  />
+
       <Container fluid>
         <Row>
-          <Col lg="6" sm="12">
-            <h1>Feria de negocios</h1>
+          <Col lg="9" sm="12" md="12">
+            <h3 className="tituloFerias">Feria de negocios</h3>
           </Col>
 
-          <Col lg="6" sm="12">
+          <Col lg="3" sm="12" md="12">
             <Button
-              className="btn-fill"
-              variant="primary"
+              className="btn-fill btn-rounded bg-blue"
               onClick={this.toggleShow}>
                 Crear nueva feria
             </Button>
@@ -77,25 +169,25 @@ render() {
         {
           post?.map((item, i)=>(
             <Col lg="3" sm="6" key={i}>
-              <Card className="card-stats">
-              <Dropdown className="position-absolute right m-1"  >
-                <Dropdown.Toggle className="btn-fill  btn-rounded" variant="light">
-                  <i className="nc-icon nc-settings-gear-64"></i>
+              <Card className="card-stats" className="folder">
+              <Dropdown className="position-absolute right m-1" as={Nav.Item} >
+                <Dropdown.Toggle  as={Nav.Link}   variant="default" >
+                  <i className="fas fa-ellipsis-v"></i>
                 </Dropdown.Toggle>
 
                 <Dropdown.Menu>
-                  <Dropdown.Item href={`#/${item.id}`}><i className="fas fa-edit"></i>Editar</Dropdown.Item>
-                  <Dropdown.Item href="#/action-2"><i className="fas fa-copy"></i>Duplicar</Dropdown.Item>
-                  <Dropdown.Item href="#" onClick={this.toggleDelete} className="text-danger"><i className="fas fa-trash"></i>Eliminar</Dropdown.Item>
+                  <Dropdown.Item href={`/home/fairdetail/${item.id}?id=${item.id}`}><i className="fas fa-edit"></i>Editar</Dropdown.Item>
+                  <Dropdown.Item href="#"><i className="fas fa-copy"></i>Duplicar</Dropdown.Item>
+                  <Dropdown.Item onClick={()=>this.toggleDelete(item.id)} className="text-danger"><i className="fas fa-trash"></i>Eliminar</Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
-                <a className="text-decoration-none" href={`/home/fairdetail/${item.id}`}>
+                <a className="text-decoration-none" href={`/home/fairdetail/${item.id}?id=${item.id}`}>
 
                   <Card.Body>
                     <Row>
                       <Col xs="12">
                         <div>
-                          <Card.Title as="h4">{item.name}</Card.Title>
+                          <Card.Title as="h4" className="cardTitle">{item.name}</Card.Title>
                             <p className="card-category">{item.description}</p>
                         </div>
                       </Col>
@@ -104,9 +196,9 @@ render() {
                   <Card.Footer>
                     <hr></hr>
                     <div className="stats">
-                      Fecha de inicio: <Moment fromNow>{item.star_date}</Moment>
+                      Fecha de inicio: {moment(item.star_date).fromNow()}
                       <br />
-                      Fecha de finalización: <Moment toNow>{item.end_date}</Moment>
+                      Fecha de finalización: {moment(item.end_date).toNow()}
 
                     </div>
                   </Card.Footer>
@@ -125,86 +217,87 @@ render() {
 
           >
           <Modal.Header closeButton>
-            <Modal.Title><h2 className="text-align-center">Nueva Feria de Negocios</h2></Modal.Title>
+            <h3 className=" tituloFerias">Nueva Feria de Negocios</h3>
           </Modal.Header>
           <Modal.Body>
           <Tabs
             id="controlled-tab-example"
             activeKey={key}
             onSelect={(k) => this.setKey(k)}
-            className="mb-3"
+            className="mb-3 txt-blue"
             defaultActiveKey="info"
             >
-           <Tab eventKey="info" title="Información General">
-            <Row>
-              <Col sm="12" xl="6">
+           <Tab eventKey="info" title="Información General" className="txt-darkblue">
+            <Row className="m-2">
+              <Col sm="12" xl="12">
                 <label>Nombre de la feria de negocios</label>
                <Form.Group>
                  <Form.Control
                     placeholder="Nombre de la feria de negocios"
-                    type="text">
+                    type="text"
+                    onChange={this.getInputData}
+                    name="name"
+                    >
                    </Form.Control>
                </Form.Group>
                </Col>
-               <Col sm="12" xl="6">
-                 <label>Creador de la feria</label>
-                  <Form.Group>
-                    <Form.Control
-                      placeholder="Creador de la feria"
-                      type="text">
-                    </Form.Control>
-                  </Form.Group>
-                </Col>
+
              </Row>
 
-             <Row>
+             <Row className="m-2">
                <Col sm="12" xl="6">
-                 <label>Categoría</label>
+                 <label className="txt-darkblue">Categoría</label>
                 <Form.Group>
                   <Form.Control
                      placeholder="Categoría"
-                     type="text">
+                     type="text"
+                     onChange={this.getInputData}
+                     name="category"
+                      >
                     </Form.Control>
                 </Form.Group>
                 </Col>
                 <Col sm="12" xl="6">
-                  <label>Fecha de inicio</label>
+                  <label className="txt-darkblue">Fecha de inicio</label>
                    <Form.Group>
                      <Form.Control
                        placeholder="Fecha de inicio"
-                       type="text">
+                       type="date"
+                       name="start_date"
+                       onChange={this.getInputData}
+                       >
                      </Form.Control>
                    </Form.Group>
                  </Col>
               </Row>
-              <Row>
+              <Row className="m-2">
                 <Col sm="12" xl="6">
-                  <label>Fecha de fin</label>
+                  <label className="txt-darkblue">Fecha de fin</label>
                  <Form.Group>
                    <Form.Control
                       placeholder="Fecha de fin"
-                      type="text">
+                      type="date"
+                      name="end_date"
+                      onChange={this.getInputData}
+                      >
                      </Form.Control>
                  </Form.Group>
                  </Col>
-                 <Col sm="12" xl="6">
-                   <label>Archivo</label>
-                    <Form.Group>
-                      <Form.Control
-                        placeholder="Archivo"
-                        type="text">
-                      </Form.Control>
-                    </Form.Group>
-                  </Col>
+
                </Row>
 
-               <Row>
+               <Row className="m-2">
                  <Col sm="12" xl="12">
-                   <label>Descripción de la feria</label>
+                   <label className="txt-darkblue">Descripción de la feria</label>
                   <Form.Group>
                     <Form.Control
                        placeholder="Descripción de la feria"
-                       type="text">
+                       as="textarea"
+                       style={{ height: '100px' }}
+
+                       name="description"
+                       onChange={this.getInputData}
+                       >
                       </Form.Control>
                   </Form.Group>
                   </Col>
@@ -219,6 +312,7 @@ render() {
                     type="switch"
                     id="foro-preguntas"
                     label="Foro de preguntas y respuestas de los diferentes usuarios"
+                    name="options_comments"
                   />
                   </Form.Group>
                 </Col>
@@ -230,67 +324,33 @@ render() {
                      type="switch"
                      id="fechas-foro"
                      label="Fechas de respuesta de foro"
+                     onChange={this.getInputData}
+                     name="forum_dates"
                    />
                    </Form.Group>
                  </Col>
                </Row>
-
-               <Row>
-                 <Col sm="12" xl="12">
-                  <Form.Group>
-                    <Form.Check
-                      type="switch"
-                      id="foro"
-                      label="Foro"
-                    />
-                    </Form.Group>
-                  </Col>
-                </Row>
-
-                <Row>
-                  <Col sm="12" xl="12">
-                   <Form.Group>
-                     <Form.Check
-                       type="switch"
-                       id="ideas-negocio"
-                       label="Ideas de negocios"
-                     />
-                     </Form.Group>
-                   </Col>
-                 </Row>
-                 <Row>
-                   <Col sm="12" xl="12">
-                    <Form.Group>
-                      <Form.Check
-                        type="switch"
-                        id="evaluacion"
-                        label="Evaluación"
-                      />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-
            </Tab>
          </Tabs>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="light" onClick={this.toggleShow}>
+            <Button variant="light" className="btn-rounded" onClick={this.toggleShow}>
               Cerrar
             </Button>
-            <Button variant="success" className="btn-fill">Guardar</Button>
+            <Button variant="primary" className="btn-fill btn-rounded" onClick={this.submitFair}>Guardar</Button>
           </Modal.Footer>
         </Modal>
 
-        <Modal show={showDelete} onHide={this.toggleDelete}>
+        <Modal show={showDelete} onHide={()=> this.toggleDelete(0)}>
             <Modal.Header closeButton>
               <Modal.Title className="txt-blue">Eliminar</Modal.Title>
             </Modal.Header>
             <Modal.Body className="text-align-center">¿Desea eliminar esta feria de negocios?</Modal.Body>
             <Modal.Footer>
-              <button variant="none" size="lg" onClick={this.toggleDelete} className="bg-darkblue btn-lg btn-rounded txt-white-btn">
+              <button variant="none" size="lg" onClick={()=> this.toggleDelete(0)} className="bg-darkblue btn-lg btn-rounded txt-white-btn">
                 Cancelar
               </button>
-              <button size="lg" onClick={this.toggleDelete} className="bg-blue btn-lg btn-rounded txt-white-btn">
+              <button size="lg" onClick={this.deleteFair} className="bg-blue btn-lg btn-rounded txt-white-btn">
                 Eliminar
               </button>
             </Modal.Footer>

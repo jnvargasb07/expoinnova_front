@@ -6,10 +6,11 @@ import { Nav } from "react-bootstrap";
 function Sidebar({ color, image, routes }) {
   const location = useLocation();
   const activeRoute = (routeName) => {
+
     return location.pathname.indexOf(routeName) > -1 ? "active" : "";
   };
   return (
-    <div className="sidebar" data-image={image} data-color={color}>
+    <div className="sidebar">
       <div
         className="sidebar-background"
 
@@ -17,7 +18,7 @@ function Sidebar({ color, image, routes }) {
       <div className="sidebar-wrapper">
         <div className="logo d-flex align-items-center justify-content-start">
           <a
-            href="https://www.creative-tim.com?ref=lbd-sidebar"
+            href="/home"
             className="simple-text logo-mini mx-1"
           >
             <div className="logo-img">
@@ -27,9 +28,7 @@ function Sidebar({ color, image, routes }) {
               />
             </div>
           </a>
-          <a className="simple-text" href="http://www.creative-tim.com">
-            UCR - CV
-          </a>
+
         </div>
         <Nav>
           {routes.map((prop, key) => {

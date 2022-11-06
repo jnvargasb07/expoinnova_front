@@ -2,7 +2,6 @@ import React, {Component} from "react";
 
 import axios from "axios";
 import { url } from "../services/api";
-import logo from "../../../assets/img/logo.png";
 
 class ChangePassword extends Component {
   constructor(props) {
@@ -83,9 +82,9 @@ class ChangePassword extends Component {
               errorMsg: "Cambio de contraseña exitoso",
               color:"alert alert-success"
             });
+            window.location.href = "/";
             sessionStorage.removeItem('code');
           }, "4000");
-          window.location.href = "/";
         } else {
           this.setState({
             error: true,
@@ -117,19 +116,11 @@ class ChangePassword extends Component {
       <div className="global-container m-0 vh-100 row justify-content-center align-items-center">
         <div className="card login-form box">
           <div className="card-body">
-          <div className="text-center m-5">
-              <img src={logo} alt="Logo"/>
-            </div>
-            <h3 className="card-title text-center blue-text-login h4">Cambiar Contraseña</h3>
-            <div>
-                  <small className="text-color-recovery">
-                    La contraseña debe tener al menos 8 caracteres
-                  </small >
-                </div>
+            <h3 className="card-title text-center">Cambiar Contraseña</h3>
               <div>
                 <div>
                 </div>
-                  {this.state.error === true &&
+                {this.state.error === true &&
                     <div class={this.state.color} role="alert">
                       {this.state.errorMsg}
                     </div>
@@ -138,7 +129,7 @@ class ChangePassword extends Component {
                   {/* <div className="alert alert-danger alert-dismissible fade show" role="alert">Incorrect username or password.</div> */}
                   <form onSubmit={this.preventSubmit}>
                     <div className="form-group">
-                      <label htmlFor="exampleInputEmail1" className="text-color-recovery">
+                      <label htmlFor="exampleInputEmail1">
                         Direccion de correo electrónico
                       </label>
                       <input
@@ -152,7 +143,7 @@ class ChangePassword extends Component {
                       />
                     </div>
                     <div className="form-group">
-                      <label htmlFor="exampleInputEmail1" className="text-color-recovery">
+                      <label htmlFor="exampleInputEmail1">
                         Nueva contraseña
                       </label>
                       <input
@@ -166,7 +157,7 @@ class ChangePassword extends Component {
                       />
                     </div>
                     <div className="form-group">
-                      <label htmlFor="exampleInputEmail1" className="text-color-recovery">
+                      <label htmlFor="exampleInputEmail1">
                         Confirmar contraseña
                       </label>
                       <input
@@ -179,16 +170,14 @@ class ChangePassword extends Component {
                         onChange={this.getInputData.bind(this)}
                       />
                     </div>
-                    <div className="d-flex justify-content-center">
-                      <button
-                        type="submit"
-                        id="action-btn"
-                        className="btn btn-primary btn-block col-md-12 background-button-recovery w-100"
-                        onClick={this.changePassword}
-                      >
-                        Continuar
-                      </button>
-                    </div>
+                    <button
+                      type="submit"
+                      id="action-btn"
+                      className="btn btn-primary btn-block col-md-12"
+                      onClick={this.changePassword}
+                    >
+                      Continuar
+                    </button>
                   </form>
                 </div>
               </div>
