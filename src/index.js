@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./assets/css/animate.min.css";
@@ -10,14 +10,23 @@ import "./assets/css/demo.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
 import AdminLayout from "./Admin.js";
+import Login from "./screen/components/Auth/Login";
+import Recovery from "./screen/components/Auth/Recovery";
+import ChangePassword from "./screen/components/Auth/ChangePassword";
 
+//  <Route path="/admin" element={ <Navigate replace to="/admin" />}  />
 ReactDOM.render(
   <BrowserRouter>
     <Routes>
-      <Route path="*" render={(props) => <AdminLayout {...props} />} element={<AdminLayout />} />
-      <Route path="/" element={ <Navigate replace to="/admin" />}  />
+      <Route path="/" element={ <Login />}  />
+      <Route path="/recovery" element={ <Recovery />}  />
+      <Route path="/change-password" element={ <ChangePassword /> } />
+      <Route path="*" element={<AdminLayout />} />
 
     </Routes>
   </BrowserRouter>,
   document.getElementById("root")
 );
+
+/*      <Route path="/users/*" element={<AdminLayout />} />
+      <Route path="/forum/*" element={<AdminLayout />} />*/
