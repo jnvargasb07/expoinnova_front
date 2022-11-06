@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-
+import axios from "axios";
 // react-bootstrap components
 import {
 
@@ -14,55 +14,12 @@ import {
   Tooltip,
   Modal,
   Tabs,
-  Tab
+  Tab,
+  Dropdown
 } from "react-bootstrap";
-
-
-
-const ferias = [
-  {
-    nombre:"Feria 1",
-    descripcion: "Lorem ipsum dolor sit amet",
-    encargado: "Encargado 01",
-    empresa:"Empresa 01",
-    img: "https://www.iebschool.com/blog/wp-content/uploads/2019/09/IT-BUSINESS-PARTNER.jpg"
-  },
-  {
-    nombre:"Feria 2",
-    descripcion: "Lorem ipsum dolor sit amet",
-    encargado: "Encargado 02",
-    empresa:"Empresa 02",
-    img: "https://murinightmarket.com/wp-content/uploads/2021/07/Business.jpg"
-  },
-  {
-    nombre:"Feria 3",
-    descripcion: "Lorem ipsum dolor sit amet",
-    encargado: "Encargado 03",
-    empresa:"Empresa 03",
-    img: "https://www.patriotsoftware.com/wp-content/uploads/2019/03/craft-financial-business-plan-1.jpg"
-  },
-  {
-    nombre:"Feria 4",
-    descripcion: "Lorem ipsum dolor sit amet",
-    encargado: "Encargado 04",
-    empresa:"Empresa 04",
-    img: "https://www.esan.edu.pe/images/blog/2018/10/05/1500x844-business-intelligence-analytics.jpg"
-  },
-  {
-    nombre:"Feria 5",
-    descripcion: "Lorem ipsum dolor sit amet",
-    encargado: "Encargado 05",
-    empresa:"Empresa 05",
-    img: "https://www.callbell.eu/wp-content/uploads/2020/09/social-media-factory-ninja-academy-2.jpg"
-  },
-  {
-    nombre:"Feria 6",
-    descripcion: "Lorem ipsum dolor sit amet",
-    encargado: "Encargado 06",
-    empresa:"Empresa 06",
-    img: "https://www.iebschool.com/blog/wp-content/uploads/2019/09/IT-BUSINESS-PARTNER.jpg"
-  }
-];
+import AppUtil from '../../../AppUtil/AppUtil.js';
+import Moment from 'react-moment';
+import 'moment-timezone';
 
 /*  <Col lg="6" sm="12">
     <Form.Group>
@@ -73,9 +30,31 @@ const ferias = [
     </Form.Group>
   </Col>*/
 function Home() {
+
   const [show, setShow] = useState(false);
+
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
+
+  const [showDelete, setShowDelete] = useState(false);
+  const toggleDelete = () => setShowDelete(!showDelete);
+  const [post, setPost] = useState([]);
+  let fairs = [];
+  React.useEffect(() => {
+    AppUtil.postAPI('login', {email: 'superadmin@test.com', password: 12345678}).then(response => {
+
+
+      AppUtil.getAPI('fairs', response.access_token).then(responseFair => {
+        setPost(responseFair.data);
+
+      });
+
+
+
+    });
+  }, []);
+
+     if (!post) return null;
     const [key, setKey] = useState('info');
   return (
     <>
@@ -97,28 +76,42 @@ function Home() {
 
         <Row>
         {
-          ferias.map((item, i)=>(
+          post.map((item, i)=>(
             <Col lg="3" sm="6" key={i}>
               <Card className="card-stats">
-                <Card.Img variant="top" src={item.img} />
-                <Card.Body>
-                  <Row>
-                    <Col xs="12">
-                      <div>
-                        <Card.Title as="h4">{item.nombre}</Card.Title>
-                          <p className="card-category">{item.descripcion}</p>
-                      </div>
-                    </Col>
-                  </Row>
-                </Card.Body>
-                <Card.Footer>
-                  <hr></hr>
-                  <div className="stats">
-                    {item.encargado}
-                    <br />
-                    {item.empresa}
-                  </div>
-                </Card.Footer>
+              <Dropdown className="position-absolute right m-1"  >
+                <Dropdown.Toggle className="btn-fill  btn-rounded" variant="light">
+                  <i className="nc-icon nc-settings-gear-64"></i>
+                </Dropdown.Toggle>
+
+                <Dropdown.Menu>
+                  <Dropdown.Item href={`#/${item.id}`}><i className="fas fa-edit"></i>Editar</Dropdown.Item>
+                  <Dropdown.Item href="#/action-2"><i className="fas fa-copy"></i>Duplicar</Dropdown.Item>
+                  <Dropdown.Item href="#" onClick={toggleDelete} className="text-danger"><i className="fas fa-trash"></i>Eliminar</Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
+                <a className="text-decoration-none" href={`/admin/fairdetail/${item.id}`}>
+
+                  <Card.Body>
+                    <Row>
+                      <Col xs="12">
+                        <div>
+                          <Card.Title as="h4">{item.name}</Card.Title>
+                            <p className="card-category">{item.description}</p>
+                        </div>
+                      </Col>
+                    </Row>
+                  </Card.Body>
+                  <Card.Footer>
+                    <hr></hr>
+                    <div className="stats">
+                      Fecha de inicio: <Moment fromNow>{item.star_date}</Moment>
+                      <br />
+                      Fecha de finalización: <Moment toNow>{item.end_date}</Moment>
+
+                    </div>
+                  </Card.Footer>
+                  </a>
               </Card>
             </Col>
           ))
@@ -129,8 +122,8 @@ function Home() {
           onHide={handleClose}
           backdrop="static"
           keyboard={false}
-          size="lg
-          centered"
+          size="lg"
+
           >
           <Modal.Header closeButton>
             <Modal.Title><h2 className="text-align-center">Nueva Feria de Negocios</h2></Modal.Title>
@@ -288,6 +281,23 @@ function Home() {
             <Button variant="success" className="btn-fill">Guardar</Button>
           </Modal.Footer>
         </Modal>
+
+        <Modal show={showDelete} onHide={toggleDelete}>
+            <Modal.Header closeButton>
+              <Modal.Title className="txt-blue">Eliminar</Modal.Title>
+            </Modal.Header>
+            <Modal.Body className="text-align-center">¿Desea eliminar esta feria de negocios?</Modal.Body>
+            <Modal.Footer>
+              <button variant="none" size="lg" onClick={toggleDelete} className="bg-darkblue btn-lg btn-rounded txt-white-btn">
+                Cancelar
+              </button>
+              <button size="lg" onClick={toggleDelete} className="bg-blue btn-lg btn-rounded txt-white-btn">
+                Eliminar
+              </button>
+            </Modal.Footer>
+          </Modal>
+
+
       </Container>
     </>
   );

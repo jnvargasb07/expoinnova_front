@@ -1,64 +1,68 @@
 /*ESTILOS PARA CAMPUS VIRTUAL*/
+
+@font-face {
+  font-family: 'PromptMedium';
+  src: url("../fonts/Prompt Medium.ttf");
+}
+
 .text-align-center
 {
   text-align: center !important;
 }
 
-.global-container{
-	height:100%;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+.text-decoration-none{
+  text-decoration: none;
 }
 
-form{
-	padding-top: 10px;
-	font-size: 14px;
-	margin-top: 30px;
+.right{
+  right: 0;
 }
 
-.card-title{ font-weight:300; }
+.btn-rounded{
+  border-radius: 60px;
+  border:none;
+}
 
-.btn{
-	font-size: 14px;
-	margin-top:20px;
+.bg-gray{
+  background-color: #E9EBEF;
+}
+
+.bg-blue{
+  background-color: #1A549C;
+}
+
+.bg-darkblue{
+  background-color: #181845;
+}
+
+.txt-blue{
+  color: #1A549C;
+}
+
+.txt-white{
+  color:#fff;
+  font-size: 4em;
+  text-align: center;
+  float: left;
+  margin-left:17%;
+}
+
+.txt-white-btn{
+    color:#fff;
+}
+
+.roundIcon{
+    width: 115px;
+    height: 115px;
+   padding: 10px;
+   background-color: #1A549C;
+   border: 2px solid #1A549C;
+   border-radius: 60px;
+   -moz-border-radius: 15px;
+   text-align: center;
 }
 
 
-.login-form{ 
-	width:530px;
-	margin:20px;
-}
-
-.sign-up{
-	text-align:center;
-	padding:20px 0 0;
-}
-
-.alert{
-	margin-bottom:-30px;
-	font-size: 13px;
-	margin-top:20px;
-}
-
-#action-btn{
-  background-color: rgb(45, 45, 201);
-  color: white;
-  border: none;
-  border-radius: 30px 30px;
-}
-
-#email{
-  border-radius: 30px 30px;
-  background-color: rgb(245, 244, 244);
-}
-
-#password{
-  border-radius: 30px 30px;
-  background-color: rgb(245, 244, 244);
-}
-
-.box{
-	border: navajowhite;
-    box-shadow: 1px 1px 4px 1px lightgrey;
+.dark-blue-bg{
+  background-color: #181845;
 }
