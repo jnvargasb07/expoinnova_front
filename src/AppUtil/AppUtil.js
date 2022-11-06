@@ -1,6 +1,6 @@
 import Axios from 'axios';
 const proxy = ""; //"https://cors-anywhere.herokuapp.com/";
-const apiUrl = "https://api.expoinnova.jegsnet.com/api/v1/"
+const apiUrl = "api/v1/" //"https://api.expoinnova.jegsnet.com/api/v1/"
 const AppUtil = {
 
   postAPI:async function postAPI(endpoint, dataPost)

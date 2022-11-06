@@ -3,6 +3,8 @@ import React, {Component} from "react";
 
 import axios from "axios";
 import { url } from "../services/api";
+import logo from "../../../assets/img/logo.png";
+
 
 class Recovery extends Component {
   constructor(props) {
@@ -107,14 +109,17 @@ class Recovery extends Component {
       <div className="global-container m-0 vh-100 row justify-content-center align-items-center">
         <div className="card login-form box">
           <div className="card-body">
-            <h3 className="card-title text-center">Restablecer Contraseña</h3>
+          <div className="text-center m-5">
+              <img src={logo} alt="Logo"/>
+            </div>
+            <h3 className="card-title text-center blue-text-login h4">Restablecer Contraseña</h3>
             {this.state.nextPage === false && (
               <div>
                 <div>
-                  <p className="text-center">
+                  <small className="text-center text-color-recovery">
                     Para restablecer su contraseña introduzca su correo
                     electrónico
-                  </p>
+                  </small >
                 </div>
                 {this.state.error === true &&
                     <div class="alert alert-danger" role="alert">
@@ -125,7 +130,7 @@ class Recovery extends Component {
                   {/* <div className="alert alert-danger alert-dismissible fade show" role="alert">Incorrect username or password.</div> */}
                   <form onSubmit={this.preventSubmit}>
                     <div className="form-group">
-                      <label htmlFor="exampleInputEmail1">
+                      <label htmlFor="exampleInputEmail1" className="text-color-recovery">
                         Direccion de correo electrónico
                       </label>
                       <input
@@ -138,14 +143,17 @@ class Recovery extends Component {
                         onChange={this.getInputData.bind(this)}
                       />
                     </div>
+                    <br></br>
+                    <div className="d-flex justify-content-center">
                     <button
                       type="submit"
                       id="action-btn"
-                      className="btn btn-primary btn-block col-md-12"
+                      className="btn btn-primary btn-block col-md-12 background-button-recovery w-100"
                       onClick={this.recovery}
                     >
                       Continuar
                     </button>
+                    </div>
                   </form>
                 </div>
               </div>
@@ -153,7 +161,7 @@ class Recovery extends Component {
             {this.state.nextPage === true && (
               <div>
                 <div>
-                  <p className="text-center">
+                  <p className="text-center text-color-recovery">
                     Para cambiar tu contraseña ingresa el código de verificación enviado a {this.state.form.email}
                   </p>
                 </div>
@@ -176,14 +184,16 @@ class Recovery extends Component {
                         onChange={this.getInputData.bind(this)}
                       />
                     </div>
-                <a
-                  type="submit"
-                  id="action-btn"
-                  className="btn btn-primary btn-block col-md-12"
-                  onClick={this.verifyCode}
-                >
-                  Continuar
-                </a>
+                    <div className="d-flex justify-content-center w-100">
+                      <a
+                        type="submit"
+                        id="action-btn"
+                        className="btn btn-primary btn-block col-md-12 background-button-recovery"
+                        onClick={this.verifyCode}
+                      >
+                        Continuar
+                      </a>
+                </div>
               </div>
             )}
           </div>
