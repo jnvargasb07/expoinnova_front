@@ -1,22 +1,23 @@
-import React from "react";
+import React, {Component} from "react";
 
 import axios from "axios";
 import { url } from "../services/api";
-import { logo } from "../../../assets/img/logo.png";
+import logo from "../../../assets/img/logo.png";
 
-class Login extends React.Component {
+class Login extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+      form: {
+        email: "",
+        password: "",
+      },
+      error: false,
+      errorMsg: "",
+    };
   }
 
-  state = {
-    form: {
-      email: "",
-      password: "",
-    },
-    error: false,
-    errorMsg: "",
-  };
+
 
   //previene que recargue pagina
   //cuando se da boton iniciar sesion
@@ -36,6 +37,7 @@ class Login extends React.Component {
 
   //se maneja la autenticacion del usuario
   login = () => {
+    debugger
     if (this.state.form.email !== "" && this.state.form.password !== "") {
       let url_api = url + "login";
       console.log(this.state.form);
@@ -43,13 +45,14 @@ class Login extends React.Component {
         .post(url_api, this.state.form)
         .then((response) => {
           console.log(response.data.user);
-          if (response.status == 200) {
+          if (response.status === 200) {
+
             //se guarda el usuario en session
             sessionStorage.setItem('token', response.data.access_token);
             sessionStorage.setItem('user', response.data.user);
             //se redirecciona a main
             // this.props.history.push("/admin");
-            window.location.href = "/home";
+            window.location.href = "/home/";
           } else {
             this.setState({
               error: true,
@@ -71,12 +74,12 @@ class Login extends React.Component {
       <div className="global-container m-0 vh-100 row justify-content-center align-items-center">
         <div className="card login-form box">
           <div className="card-body">
-            <img src={logo}></img>
+            <img src={logo} alt="Logo"/>
             <h3 className="card-title text-center">
               Iniciar Sesión en ExpoInnova
             </h3>
             {this.state.error === true && (
-              <div class="alert alert-danger" role="alert">
+              <div className="alert alert-danger" role="alert">
                 {this.state.errorMsg}
               </div>
             )}
@@ -84,7 +87,7 @@ class Login extends React.Component {
               {/* <div className="alert alert-danger alert-dismissible fade show" role="alert">Incorrect username or password.</div> */}
               <form onSubmit={this.preventSubmit}>
                 <div className="form-group">
-                  <label for="exampleInputEmail1">
+                  <label htmlFor="exampleInputEmail1">
                     Direccion de correo electronico
                   </label>
                   <input
@@ -98,7 +101,7 @@ class Login extends React.Component {
                   />
                 </div>
                 <div className="form-group">
-                  <label for="exampleInputPassword1">Password</label>
+                  <label htmlFor="exampleInputPassword1">Password</label>
                   <input
                     type="password"
                     className="form-control form-control-sm"

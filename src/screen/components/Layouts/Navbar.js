@@ -1,7 +1,7 @@
 
 import React  from "react";
 import { useLocation } from "react-router-dom";
-import { Navbar, Container, Nav, Dropdown, Button, Badge, Form , InputGroup} from "react-bootstrap";
+import { Navbar, Container, Nav, Dropdown, Button, Form , InputGroup} from "react-bootstrap";
 
 import routes from "../../../routes.js";
 
@@ -59,11 +59,14 @@ function Header() {
               href="#"
               onClick={(e) => e.preventDefault()}
             >
-              <InputGroup>
-               <InputGroup.Text id="basic-addon1"><i className="nc-icon nc-zoom-split"></i></InputGroup.Text>
+              <InputGroup className="inputSearch">
+               <i className="nc-icon nc-zoom-split"></i>
                 <Form.Control
-                  placeholder="Descripción de la feria"
-                  type="text">
+                  placeholder="Buscar..."
+                  type="text"
+                  className="inputSearch"
+
+                  >
                   </Form.Control>
                 </InputGroup>
                 </Nav.Link>
@@ -78,8 +81,7 @@ function Header() {
                   variant="default"
 
                 >
-                  <i className="nc-icon nc-notification-70"></i>
-                  <span className="d-lg-none ml-1">Notificaciones</span>
+                  <h3 className="txt-blue"><i className="fas fa-bell"></i></h3>
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
                   <Dropdown.Item
@@ -104,7 +106,7 @@ function Header() {
                   variant="default"
                   className="m-0"
                 >
-                  <span className="ml-1">John Doe</span>
+                  <span className="ml-1 txt-blue">John Doe</span>
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
                 <Dropdown.Item

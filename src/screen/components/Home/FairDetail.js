@@ -10,7 +10,6 @@ import {
   Row,
   Col,
   Form,
-  Modal,
   Tabs,
   Tab
 } from "react-bootstrap";
@@ -44,7 +43,7 @@ function FairDetail() {
   return (
     <>
     <Container fluid>
-      <Button variant="warning" className="btn-fill btn-rounded" onClick={() => navigate('/admin')}>
+      <Button variant="warning" className="btn-fill btn-rounded" onClick={() => navigate('/home')}>
         <i className="nc-icon nc-stre-left"></i>
           Volver
         </Button>

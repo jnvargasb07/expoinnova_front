@@ -1,28 +1,26 @@
-import React from "react";
+import React, {Component} from "react";
 
 // react-bootstrap components
 import {
 
   Button,
   Card,
-  Table,
   Container,
   Row,
   Col,
   Form,
-  OverlayTrigger,
-  Tooltip,
   Modal,
   Tabs,
   Tab,
+  Nav,
   Dropdown
 } from "react-bootstrap";
 import AppUtil from '../../../AppUtil/AppUtil.js';
 import Moment from 'react-moment';
 import 'moment-timezone';
+import { url } from "../services/api";
 
-
-export default class Home extends React.Component {
+ class Home extends Component {
   constructor(props)
   {
     super(props);
@@ -37,18 +35,19 @@ export default class Home extends React.Component {
 
   componentWillMount()
   {
-    console.log("PINGA");
-    AppUtil.getAPI('fairs', sessionStorage.getItem('token')).then(responseFair => {
-      console.log(responseFair);
-      this.setState({post: responseFair.data});
 
+      let url_api = url + "fairs";
+    AppUtil.getAPI(url_api, sessionStorage.getItem('token')).then(responseFair => {
+
+      let post = responseFair ? responseFair.data : [];
+      this.setState({post});
     });
   }
 
   setKey = (key) => this.setState({key});
 
   toggleDelete = () => this.setState({showDelete: !this.state.showDelete});
-
+  toggleShow = () => this.setState({show: !this.state.show})
 
 render() {
   let {show, showDelete, post, key} = this.state;
@@ -56,14 +55,13 @@ render() {
     <>
       <Container fluid>
         <Row>
-          <Col lg="6" sm="12">
-            <h1>Feria de negocios</h1>
+          <Col lg="9" sm="12" md="12">
+            <h3 className="tituloFerias">Feria de negocios</h3>
           </Col>
 
-          <Col lg="6" sm="12">
+          <Col lg="3" sm="12" md="12">
             <Button
-              className="btn-fill"
-              variant="primary"
+              className="btn-fill btn-rounded bg-blue"
               onClick={this.toggleShow}>
                 Crear nueva feria
             </Button>
@@ -72,12 +70,12 @@ render() {
 
         <Row>
         {
-          post.map((item, i)=>(
+          post?.map((item, i)=>(
             <Col lg="3" sm="6" key={i}>
-              <Card className="card-stats">
-              <Dropdown className="position-absolute right m-1"  >
-                <Dropdown.Toggle className="btn-fill  btn-rounded" variant="light">
-                  <i className="nc-icon nc-settings-gear-64"></i>
+              <Card className="card-stats" className="folder">
+              <Dropdown className="position-absolute right m-1" as={Nav.Item} >
+                <Dropdown.Toggle  as={Nav.Link}   variant="default" >
+                  <i className="fas fa-ellipsis-v"></i>
                 </Dropdown.Toggle>
 
                 <Dropdown.Menu>
@@ -92,7 +90,7 @@ render() {
                     <Row>
                       <Col xs="12">
                         <div>
-                          <Card.Title as="h4">{item.name}</Card.Title>
+                          <Card.Title as="h4" className="cardTitle">{item.name}</Card.Title>
                             <p className="card-category">{item.description}</p>
                         </div>
                       </Col>
@@ -122,19 +120,19 @@ render() {
 
           >
           <Modal.Header closeButton>
-            <Modal.Title><h2 className="text-align-center">Nueva Feria de Negocios</h2></Modal.Title>
+            <h3 className=" tituloFerias">Nueva Feria de Negocios</h3>
           </Modal.Header>
           <Modal.Body>
           <Tabs
             id="controlled-tab-example"
             activeKey={key}
             onSelect={(k) => this.setKey(k)}
-            className="mb-3"
+            className="mb-3 txt-blue"
             defaultActiveKey="info"
             >
-           <Tab eventKey="info" title="Información General">
-            <Row>
-              <Col sm="12" xl="6">
+           <Tab eventKey="info" title="Información General" className="txt-darkblue">
+            <Row className="m-2">
+              <Col sm="12" xl="12">
                 <label>Nombre de la feria de negocios</label>
                <Form.Group>
                  <Form.Control
@@ -143,20 +141,12 @@ render() {
                    </Form.Control>
                </Form.Group>
                </Col>
-               <Col sm="12" xl="6">
-                 <label>Creador de la feria</label>
-                  <Form.Group>
-                    <Form.Control
-                      placeholder="Creador de la feria"
-                      type="text">
-                    </Form.Control>
-                  </Form.Group>
-                </Col>
+
              </Row>
 
-             <Row>
+             <Row className="m-2">
                <Col sm="12" xl="6">
-                 <label>Categoría</label>
+                 <label className="txt-darkblue">Categoría</label>
                 <Form.Group>
                   <Form.Control
                      placeholder="Categoría"
@@ -165,43 +155,37 @@ render() {
                 </Form.Group>
                 </Col>
                 <Col sm="12" xl="6">
-                  <label>Fecha de inicio</label>
+                  <label className="txt-darkblue">Fecha de inicio</label>
                    <Form.Group>
                      <Form.Control
                        placeholder="Fecha de inicio"
-                       type="text">
+                       type="date">
                      </Form.Control>
                    </Form.Group>
                  </Col>
               </Row>
-              <Row>
+              <Row className="m-2">
                 <Col sm="12" xl="6">
-                  <label>Fecha de fin</label>
+                  <label className="txt-darkblue">Fecha de fin</label>
                  <Form.Group>
                    <Form.Control
                       placeholder="Fecha de fin"
-                      type="text">
+                      type="date">
                      </Form.Control>
                  </Form.Group>
                  </Col>
-                 <Col sm="12" xl="6">
-                   <label>Archivo</label>
-                    <Form.Group>
-                      <Form.Control
-                        placeholder="Archivo"
-                        type="text">
-                      </Form.Control>
-                    </Form.Group>
-                  </Col>
+
                </Row>
 
-               <Row>
+               <Row className="m-2">
                  <Col sm="12" xl="12">
-                   <label>Descripción de la feria</label>
+                   <label className="txt-darkblue">Descripción de la feria</label>
                   <Form.Group>
                     <Form.Control
                        placeholder="Descripción de la feria"
-                       type="text">
+                       as="textarea"
+                       style={{ height: '100px' }}
+                       >
                       </Form.Control>
                   </Form.Group>
                   </Col>
@@ -299,3 +283,6 @@ render() {
   );
   }
 }
+
+
+export default Home;
