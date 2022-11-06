@@ -2,6 +2,7 @@ import React from "react";
 
 import axios from "axios";
 import { url } from "../services/api";
+import { logo } from "../../../assets/img/logo.png";
 
 class Login extends React.Component {
   constructor(props) {
@@ -27,7 +28,7 @@ class Login extends React.Component {
   getInputData = async (e) => {
     await this.setState({
       form: {
-        ...this.setState.form,
+        ...this.state.form,
         [e.target.name]: e.target.value,
       },
     });
@@ -37,14 +38,18 @@ class Login extends React.Component {
   login = () => {
     if (this.state.form.email !== "" && this.state.form.password !== "") {
       let url_api = url + "login";
+      console.log(this.state.form);
       axios
         .post(url_api, this.state.form)
         .then((response) => {
-          console.log(response);
+          console.log(response.data.user);
           if (response.status == 200) {
             //se guarda el usuario en session
+            sessionStorage.setItem('token', response.data.access_token);
+            sessionStorage.setItem('user', response.data.user);
             //se redirecciona a main
-            this.props.history.push("/admin");
+            // this.props.history.push("/admin");
+            window.location.href = "/home";
           } else {
             this.setState({
               error: true,
@@ -66,6 +71,7 @@ class Login extends React.Component {
       <div className="global-container m-0 vh-100 row justify-content-center align-items-center">
         <div className="card login-form box">
           <div className="card-body">
+            <img src={logo}></img>
             <h3 className="card-title text-center">
               Iniciar Sesión en ExpoInnova
             </h3>
@@ -88,7 +94,7 @@ class Login extends React.Component {
                     name="email"
                     aria-describedby="emailHelp"
                     placeholder="nombre@ejemplo.com"
-                    onChange={this.getInputData.bind(this)}
+                    onChange={this.getInputData}
                   />
                 </div>
                 <div className="form-group">
@@ -99,7 +105,7 @@ class Login extends React.Component {
                     id="password"
                     name="password"
                     placeholder="***********"
-                    onChange={this.getInputData.bind(this)}
+                    onChange={this.getInputData}
                   />
                 </div>
                 <button

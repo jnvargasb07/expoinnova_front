@@ -5,7 +5,7 @@ import AdminNavbar from "./screen/components/Layouts/Navbar";
 import Footer from "./screen/components/Layouts/Footer";
 import Sidebar from "./screen/components/Layouts/Header";
 import FairDetail from './screen/components/Home/FairDetail';
-
+import Home from "./screen/components/Home/Home.js";
 
 import routes from "./routes.js";
 
@@ -15,7 +15,9 @@ function Admin() {
   const mainPanel = React.useRef(null);
   const getRoutes = (routes) => {
     return routes.map((prop, key) => {
-      if (prop.layout === "/admin") {
+
+      if (prop.path === "/") {
+
         return (
           <Route
             path={prop.layout + prop.path}
@@ -48,8 +50,9 @@ function Admin() {
         <div className="main-panel" ref={mainPanel}>
             <AdminNavbar />
           <div className="content">
-            <Routes>{getRoutes(routes)}
-              <Route path={'/admin/fairdetail/:id'} element={<FairDetail />} />
+            <Routes>
+              {getRoutes(routes)}
+              <Route path={'/home/fairdetail/:id'} element={<FairDetail />} />
             </Routes>
           </div>
           <Footer />

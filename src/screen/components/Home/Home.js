@@ -1,5 +1,5 @@
-import React, {useState} from "react";
-import axios from "axios";
+import React from "react";
+
 // react-bootstrap components
 import {
 
@@ -21,41 +21,37 @@ import AppUtil from '../../../AppUtil/AppUtil.js';
 import Moment from 'react-moment';
 import 'moment-timezone';
 
-/*  <Col lg="6" sm="12">
-    <Form.Group>
-        <Form.Control
-          placeholder="Buscar"
-          type="text"
-        ></Form.Control>
-    </Form.Group>
-  </Col>*/
-function Home() {
 
-  const [show, setShow] = useState(false);
-
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
-
-  const [showDelete, setShowDelete] = useState(false);
-  const toggleDelete = () => setShowDelete(!showDelete);
-  const [post, setPost] = useState([]);
-  let fairs = [];
-  React.useEffect(() => {
-    AppUtil.postAPI('login', {email: 'superadmin@test.com', password: 12345678}).then(response => {
+export default class Home extends React.Component {
+  constructor(props)
+  {
+    super(props);
+    this.state = {
+      show: false,
+      showDelete:false,
+      post:[],
+      key:'info'
+    }
+  }
 
 
-      AppUtil.getAPI('fairs', response.access_token).then(responseFair => {
-        setPost(responseFair.data);
-
-      });
-
-
+  componentWillMount()
+  {
+    console.log("PINGA");
+    AppUtil.getAPI('fairs', sessionStorage.getItem('token')).then(responseFair => {
+      console.log(responseFair);
+      this.setState({post: responseFair.data});
 
     });
-  }, []);
+  }
 
-     if (!post) return null;
-    const [key, setKey] = useState('info');
+  setKey = (key) => this.setState({key});
+
+  toggleDelete = () => this.setState({showDelete: !this.state.showDelete});
+
+
+render() {
+  let {show, showDelete, post, key} = this.state;
   return (
     <>
       <Container fluid>
@@ -68,7 +64,7 @@ function Home() {
             <Button
               className="btn-fill"
               variant="primary"
-              onClick={handleShow}>
+              onClick={this.toggleShow}>
                 Crear nueva feria
             </Button>
           </Col>
@@ -87,10 +83,10 @@ function Home() {
                 <Dropdown.Menu>
                   <Dropdown.Item href={`#/${item.id}`}><i className="fas fa-edit"></i>Editar</Dropdown.Item>
                   <Dropdown.Item href="#/action-2"><i className="fas fa-copy"></i>Duplicar</Dropdown.Item>
-                  <Dropdown.Item href="#" onClick={toggleDelete} className="text-danger"><i className="fas fa-trash"></i>Eliminar</Dropdown.Item>
+                  <Dropdown.Item href="#" onClick={this.toggleDelete} className="text-danger"><i className="fas fa-trash"></i>Eliminar</Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
-                <a className="text-decoration-none" href={`/admin/fairdetail/${item.id}`}>
+                <a className="text-decoration-none" href={`/home/fairdetail/${item.id}`}>
 
                   <Card.Body>
                     <Row>
@@ -119,7 +115,7 @@ function Home() {
         </Row>
         <Modal
           show={show}
-          onHide={handleClose}
+          onHide={this.toggleShow}
           backdrop="static"
           keyboard={false}
           size="lg"
@@ -132,7 +128,7 @@ function Home() {
           <Tabs
             id="controlled-tab-example"
             activeKey={key}
-            onSelect={(k) => setKey(k)}
+            onSelect={(k) => this.setKey(k)}
             className="mb-3"
             defaultActiveKey="info"
             >
@@ -275,23 +271,23 @@ function Home() {
          </Tabs>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="light" onClick={handleClose}>
+            <Button variant="light" onClick={this.toggleShow}>
               Cerrar
             </Button>
             <Button variant="success" className="btn-fill">Guardar</Button>
           </Modal.Footer>
         </Modal>
 
-        <Modal show={showDelete} onHide={toggleDelete}>
+        <Modal show={showDelete} onHide={this.toggleDelete}>
             <Modal.Header closeButton>
               <Modal.Title className="txt-blue">Eliminar</Modal.Title>
             </Modal.Header>
             <Modal.Body className="text-align-center">¿Desea eliminar esta feria de negocios?</Modal.Body>
             <Modal.Footer>
-              <button variant="none" size="lg" onClick={toggleDelete} className="bg-darkblue btn-lg btn-rounded txt-white-btn">
+              <button variant="none" size="lg" onClick={this.toggleDelete} className="bg-darkblue btn-lg btn-rounded txt-white-btn">
                 Cancelar
               </button>
-              <button size="lg" onClick={toggleDelete} className="bg-blue btn-lg btn-rounded txt-white-btn">
+              <button size="lg" onClick={this.toggleDelete} className="bg-blue btn-lg btn-rounded txt-white-btn">
                 Eliminar
               </button>
             </Modal.Footer>
@@ -301,6 +297,5 @@ function Home() {
       </Container>
     </>
   );
+  }
 }
-
-export default Home;

@@ -1,5 +1,5 @@
 import Axios from 'axios';
-const proxy = "https://cors-anywhere.herokuapp.com/";
+const proxy = ""; //"https://cors-anywhere.herokuapp.com/";
 const apiUrl = "https://api-expoinnova.jegsnet.com/api/v1/" //"https://pxdev1.com/mamiferos-acuaticos/wp-json/v1/";
 
 const AppUtil = {

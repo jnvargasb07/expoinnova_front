@@ -8,7 +8,7 @@ const dashboardRoutes = [
     name: "Inicio",
     icon: "nc-icon nc-chart-pie-35",
     component: Home,
-    layout: "/admin",
+    layout: "/home",
   },
   {
     path: "/",

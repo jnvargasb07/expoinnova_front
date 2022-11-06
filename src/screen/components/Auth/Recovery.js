@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from 'react-router-dom';
 
 import axios from "axios";
 import { url } from "../services/api";
@@ -11,6 +12,7 @@ class Recovery extends React.Component {
   state = {
     form: {
       email: "",
+      verification_code: ""
     },
     error: false,
     errorMsg: "",
@@ -27,7 +29,7 @@ class Recovery extends React.Component {
   getInputData = async (e) => {
     await this.setState({
       form: {
-        ...this.setState.form,
+        ...this.state.form,
         [e.target.name]: e.target.value,
       },
     });
@@ -36,11 +38,30 @@ class Recovery extends React.Component {
   //se maneja la recuperacion de contraseña
   recovery = () => {
       if(this.state.form.email !== ""){
-        this.setState({
-            nextPage:true,
-            error:false,
-            errorMsg:""
+
+        let url_api = url + "request-password";
+        axios
+        .post(url_api, this.state.form)
+        .then((response) => {
+          if (response.status === 200) {
+            this.setState({
+              nextPage:true,
+              error:false,
+              errorMsg:""
+          })
+          } else {
+            this.setState({
+              error: true,
+              errorMsg: "Usuario o contraseña incorrectos",
+            });
+          }
         })
+        .catch((error) => {
+          this.setState({
+            error: true,
+            errorMsg: "Ha ocurrido un problema favor intentelo nuevamente",
+          });
+        });
       }else{
         this.setState({
             error:true,
@@ -48,6 +69,37 @@ class Recovery extends React.Component {
         })
       }
   };
+
+  //se verifica que el código de verificación sea valido
+  verifyCode = () => {
+    if(this.state.form.code !== ""){
+      let url_api = url + "validate-code";
+      axios
+      .post(url_api, this.state.form)
+      .then((response) => {
+        if (response.data.data) {
+          sessionStorage.setItem('code', this.state.form.verification_code);
+          window.location.href = "/change-password";
+        } else {
+          this.setState({
+            error: true,
+            errorMsg: "Código de verificación incorrecto",
+          });
+        }
+      })
+      .catch((error) => {
+        this.setState({
+          error: true,
+          errorMsg: "Ha ocurrido un problema favor intentelo nuevamente",
+        });
+      });
+    }else{
+      this.setState({
+          error:true,
+          errorMsg:"El campo de código de verificación es requerido"
+      })
+    }
+};
 
   render() {
     return (
@@ -101,15 +153,33 @@ class Recovery extends React.Component {
               <div>
                 <div>
                   <p className="text-center">
-                    Al correo electrónico {this.state.form.email} se envió la <br />
-                    información para la recuperación de su cuenta.
+                    Para cambiar tu contraseña ingresa el código de verificación enviado a {this.state.form.email}
                   </p>
                 </div>
+                {this.state.error === true &&
+                    <div class="alert alert-danger" role="alert">
+                      {this.state.errorMsg}
+                    </div>
+                  }
+                <div className="form-group">
+                      <label for="exampleInputEmail1">
+                        Código de verificación
+                      </label>
+                      <input
+                        type="verification_code"
+                        className="form-control form-control-sm"
+                        id="verification_code"
+                        name="verification_code"
+                        aria-describedby="codeHelp"
+                        placeholder="Ingresa el código"
+                        onChange={this.getInputData.bind(this)}
+                      />
+                    </div>
                 <a
                   type="submit"
                   id="action-btn"
                   className="btn btn-primary btn-block col-md-12"
-                  href="/"
+                  onClick={this.verifyCode}
                 >
                   Continuar
                 </a>
