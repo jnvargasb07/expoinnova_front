@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import ChartistGraph from "react-chartist";
+
 // react-bootstrap components
 import {
 
