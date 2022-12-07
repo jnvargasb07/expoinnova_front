@@ -2,19 +2,28 @@ import React from "react";
 import { useLocation, NavLink } from "react-router-dom";
 
 import { Nav } from "react-bootstrap";
-
+import crypto from "crypto-js";
+// dibuja el header y opciones de arriba 
 function Sidebar({ color, image, routes }) {
 
   const location = useLocation();
+
+  let bytes = crypto.AES.decrypt(
+    sessionStorage.getItem("user"),
+      "@virtual_cr"
+    );
+  let userDecrypt = JSON.parse(bytes.toString(crypto.enc.Utf8));
+  let user = userDecrypt.roles[0].name;
+
   const activeRoute = (routeName) => {
-    console.log(location.pathname.indexOf(routeName), routeName);
-    return location.pathname.indexOf(routeName) > -1 && "active";
-    
+
+
+    return (location.pathname === routeName && "active").toString();
   };
 
 
   return (
-    <div className="sidebar">
+    <div className="sidebar d-none d-md-flex">
       <div
         className="sidebar-background"
 
@@ -27,7 +36,7 @@ function Sidebar({ color, image, routes }) {
           >
             <div className="logo-img">
               <img
-                src={require("../../../assets/img/reactlogo.png")}
+                src={require("../../../assets/PNG/LOGO.png")}
                 alt="..."
               />
             </div>
@@ -39,7 +48,7 @@ function Sidebar({ color, image, routes }) {
             if (!prop.redirect)
               return (
                 <li
-                  className={activeRoute(prop.layout + prop.path)}
+                  className={activeRoute(`${prop.layout}${prop.path}`)}
                   key={key}
                   >
                   <NavLink

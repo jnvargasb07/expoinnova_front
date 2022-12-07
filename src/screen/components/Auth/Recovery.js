@@ -5,7 +5,7 @@ import axios from "axios";
 import { url } from "../services/api";
 import logo from "../../../assets/img/logo.png";
 
-
+// clase de recuperacion contraseña (se ingresa el corrreo)
 class Recovery extends Component {
   constructor(props) {
     super(props);
@@ -128,7 +128,7 @@ class Recovery extends Component {
           <div className="card-body">
             <div>
             <a onClick={this.goBack}>
-              <i class="fas fa-angle-left blue-text-login"></i>
+              <i className="fas fa-angle-left blue-text-login"></i>
               <span className="blue-text-login">Volver</span>
             </a>
             </div>
@@ -145,7 +145,7 @@ class Recovery extends Component {
                   </small >
                 </div>
                 {this.state.error === true &&
-                  <div class="alert alert-danger" role="alert">
+                  <div className="alert alert-danger" role="alert">
                     {this.state.errorMsg}
                   </div>
                 }
@@ -163,6 +163,7 @@ class Recovery extends Component {
                         name="email"
                         aria-describedby="emailHelp"
                         placeholder="nombre@ejemplo.com"
+                        maxLength={200}
                         onChange={this.getInputData.bind(this)}
                       />
                     </div>
@@ -184,7 +185,7 @@ class Recovery extends Component {
                           id="action-btn"
                           className="btn btn-primary btn-block background-button-recovery col-sm-12 col-md-12 col-xs-12 w-100"
                         >
-                          <div class="lds-dual-ring"></div>
+                          <div className="lds-dual-ring"></div>
                         </button>
                       }
                     </div>
@@ -200,7 +201,7 @@ class Recovery extends Component {
                   </p>
                 </div>
                 {this.state.error === true &&
-                  <div class="alert alert-danger" role="alert">
+                  <div className="alert alert-danger" role="alert">
                     {this.state.errorMsg}
                   </div>
                 }
@@ -235,7 +236,7 @@ class Recovery extends Component {
                       id="action-btn"
                       className="btn btn-primary btn-block background-button-recovery col-sm-12 col-md-12 col-xs-12 w-100"
                     >
-                      <div class="lds-dual-ring"></div>
+                      <div className="lds-dual-ring"></div>
                     </button>
                   }
                 </div>

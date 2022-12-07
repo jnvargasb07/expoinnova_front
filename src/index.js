@@ -19,7 +19,7 @@ import ChangePassword from "./screen/components/Auth/ChangePassword";
 axios.defaults.headers.common['access-control-allow-origin'] = '*';
 
 const root = createRoot(document.getElementById("root"));
-console.log(root);
+
 root.render(
   <BrowserRouter>
     <Routes>

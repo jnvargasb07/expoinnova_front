@@ -1,43 +1,33 @@
 import React, { Component } from "react";
-
 // react-bootstrap components
-import {
-  Button,
-  Card,
-  Container,
-  Row,
-  Col,
-  Form,
-  Modal,
-  Tabs,
-  Tab,
-  Dropdown,
-} from "react-bootstrap";
+import { Card, Container, Row, Col } from "react-bootstrap";
 import AppUtil from "../../../AppUtil/AppUtil.js";
 import "moment-timezone";
 import { url } from "../services/api";
 import crypto from "crypto-js";
-import axios from "axios";
+
 
 class Profile extends Component {
 
-  state = {
-    user: "",
-    nameUser: "",
-    edit: true,
-    form:{
-      id:"",
-      name:"",
-      email:"",
-      password:""
-    },
-    error: false,
-    errorMsg: "",
-    color: ""
-  };
+
 
   constructor(props) {
     super(props);
+    this.state = {
+      user: "",
+      nameUser: "",
+      edit: true,
+      form:{
+        id:"",
+        name:"",
+        email:"",
+        password:""
+      },
+      error: false,
+      errorMsg: "",
+      color: "",
+      loading:false
+    };
   }
 
   //se obtiene el usuario
@@ -73,26 +63,40 @@ class Profile extends Component {
     let url_api = url+"users";
     let id = this.user.id;
     let user;
-    if(this.state.form.password !== ''){
+    let {form} = this.state;
+
+
+    if (!AppUtil.isEmail(form.email ))
+    {
+      this.setState({
+       error: true,
+       errorMsg: "El correo no posee un formato valido",
+       color: "alert alert-warning"
+     });
+        return ;
+    }
+    this.setState({loading: true});
+    if(form.password !== ''){
       user = {
-        name:this.state.form.name,
-        email:this.state.form.email,
-        password:this.state.form.password
+        name:form.name,
+        email:form.email,
+        password:form.password
       }
     }else{
       user = {
-        name:this.state.form.name,
-        email:this.state.form.email
+        name:form.name,
+        email:form.email
       }
     }
 
     AppUtil.putAPI(url_api+'/'+id, user).then(response => {
-      console.log(response);
+
       if(response.success){
       this.setState({
        error: true,
        errorMsg: "El usuario se actualizo exitosamente",
-       color: "alert alert-success"
+       color: "alert alert-success",
+       loading: false
      });
      setTimeout(() => {
        this.setState({
@@ -105,7 +109,8 @@ class Profile extends Component {
       this.setState({
         error: true,
         errorMsg: "Hubo un problema actualizando el usuario, favor intentelo nuevamente",
-        color: "alert alert-success"
+        color: "alert alert-danger",
+        loading: false
       });
       setTimeout(() => {
         this.setState({
@@ -172,7 +177,7 @@ class Profile extends Component {
                       htmlFor="exampleInputEmail1"
                       className="text-color-recovery w-25"
                     >
-                      Direccion de correo electronico
+                      Dirección de correo electrónico
                     </label>
                     <input
                       type="email"
@@ -225,7 +230,7 @@ class Profile extends Component {
                       onClick={this.saveData}
                       className="bg-darkblue btn-lg btn-rounded txt-white-btn"
                     >
-                      Guardar Información
+                      {this.state.loading ? <div className="lds-dual-ring-2"></div> :'Guardar Información' }
                     </button>
                   }
                 </div>

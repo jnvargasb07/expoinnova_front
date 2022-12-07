@@ -1,9 +1,9 @@
 import {Toast, ToastContainer} from "react-bootstrap";
 
 const CustomToast = (props) => {
-
+//Estas son las alertas del sitio que se muestra en todo el sitio
 return (
-  <ToastContainer position='top-end' className="p-3">
+  <ToastContainer position={props.position ? props.position : 'top-end'} className="p-3">
        <Toast onClose={props.onClose} show={props.show} delay={3000} autohide bg={props.variant} >
          <Toast.Header>
            <strong className="me-auto">{props.title}</strong>

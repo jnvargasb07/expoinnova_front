@@ -4,7 +4,7 @@ import { useLocation } from "react-router-dom";
 import { Navbar, Container, Nav, Dropdown, Button, Form , InputGroup} from "react-bootstrap";
 import crypto from "crypto-js";
 import routes from "../../../routes.js";
-
+// dibuja la navegacion de la izquierda de la aplicacion
 function Header() {
   const [user, setUser] = useState("");
   const location = useLocation();
@@ -73,48 +73,10 @@ function Header() {
         <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
 
           <Nav className="ml-auto d-flex align-items-baseline" navbar>
-            <Nav.Item>
-            <Nav.Link
-              href="#"
-              onClick={(e) => e.preventDefault()}
-            >
-              <InputGroup className="inputSearch">
-               <i className="nc-icon nc-zoom-split p-1"></i>
-                <Form.Control
-                  placeholder="Buscar..."
-                  type="text"
-                  className="inputSearch"
-
-                  >
-                  </Form.Control>
-                </InputGroup>
-                </Nav.Link>
-            </Nav.Item>
-
-            <Nav.Item>
-
-              <Dropdown as={Nav.Item}>
-                <Dropdown.Toggle
-                  as={Nav.Link}
-                  data-toggle="dropdown"
-                  variant="default"
-
-                >
-                  <h3 className="txt-blue"><i className="fas fa-bell"></i></h3>
-                </Dropdown.Toggle>
-                <Dropdown.Menu>
-                  <Dropdown.Item
-                    href="#"
-                    onClick={(e) => e.preventDefault()}
-                  >
-                    Notification 1
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
-            </Nav.Item>
 
             <Nav.Item>
               <Nav.Link
+                as='li' 
                 href="#"
                 onClick={(e) => e.preventDefault()}
               >

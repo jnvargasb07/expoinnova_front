@@ -2,7 +2,7 @@ import React, {Component} from "react";
 
 import axios from "axios";
 import { url } from "../services/api";
-import logo from "../../../assets/img/logo.png";
+import logo from "../../../assets/PNG/INNOVA.png";
 import crypto from "crypto-js";
 
 class Login extends Component {
@@ -68,39 +68,51 @@ class Login extends Component {
 
   //se maneja la autenticacion del usuario
   login = () => {
-    
+
     if (this.state.form.email !== "" && this.state.form.password !== "") {
       this.setState({
         charging: true
       });
       let url_api = url + "login";
-      console.log(this.state.form);
+
       axios
         .post(url_api, this.state.form)
         .then((response) => {
-          console.log(response.data.user);
+
           if (response.status === 200) {
-            console.log(response.data.user)
             //se guarda el usuario en session
-            //y se encripta la informacion del usuario
+            //y se encripta la informacion del usuario prueba31@test.comn
             let user = crypto.AES.encrypt(JSON.stringify(response.data.user), "@virtual_cr").toString();
             sessionStorage.setItem('token', response.data.access_token);
+
+
+            if (response.data.user.roles[0].name === "Judges")
+            {
+              sessionStorage.setItem('student_id', (response.data.judge_id.length > 0 ? response.data.judge_id[0].id : 0));
+            }else {
+              sessionStorage.setItem('student_id', (response.data.student_id.length > 0 ? response.data.student_id[0].id : 0));
+
+            }
+
             sessionStorage.setItem('user', user);
             //se redirecciona a main
-            // this.props.history.push("/admin");
+
             window.location.href = "/home/";
           } else {
             this.setState({
               error: true,
               errorMsg: "Usuario o contraseña incorrectos",
-              charging:false
+              charging:false,
+              color:"alert alert-danger",
             });
           }
         })
         .catch((error) => {
+          console.error(error);
           this.setState({
             error: true,
             errorMsg: "Ha ocurrido un problema favor intentelo nuevamente",
+            color:"alert alert-danger",
             charging:false
           });
         });
@@ -108,7 +120,8 @@ class Login extends Component {
       this.setState({
         error: true,
         errorMsg: "Todos los campos son requeridos",
-        charging:false
+        charging:false,
+        color:"alert alert-danger",
       });
     }
   };
@@ -122,7 +135,7 @@ class Login extends Component {
               <img src={logo} alt="Logo"/>
             </div>
             <h4 className="card-title text-center blue-text-login">
-              Iniciar sesión en ExpoInnova
+              Iniciar sesión en Ferias EAN
             </h4>
             <br></br>
             <hr className="hr-login"></hr>
@@ -146,6 +159,7 @@ class Login extends Component {
                     aria-describedby="emailHelp"
                     placeholder="nombre@ejemplo.com"
                     onChange={this.getInputData}
+                    maxLength={200}
                   />
                 </div>
                 <div className="form-group">
@@ -157,6 +171,7 @@ class Login extends Component {
                     name="password"
                     placeholder="***********"
                     onChange={this.getInputData}
+                    maxLength={200}
                   />
                 </div>
                 <div className="d-flex justify-content-center">
@@ -172,11 +187,11 @@ class Login extends Component {
                 }
                 {this.state.charging &&
                     <button
-                    type="submit"
-                    id="action-btn"
-                    className="btn btn-primary btn-block blue-button-login col-sm-12 col-md-12 col-xs-12 w-100"
+                      type="submit"
+                      id="action-btn"
+                      className="btn btn-primary btn-block blue-button-login col-sm-12 col-md-12 col-xs-12 w-100"
                   >
-                    <div class="lds-dual-ring"></div>
+                    <div className="lds-dual-ring"></div>
                   </button>
                 }
                 </div>

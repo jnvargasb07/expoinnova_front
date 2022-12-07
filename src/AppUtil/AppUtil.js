@@ -101,12 +101,37 @@ const AppUtil = {
         console.error(e);
         return false;
       }
-  }/*
+  },
+  fileToBase64: function fileToBase64 (file, cb)
+  {
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onload = function () {
+      cb(null, reader.result)
+    }
+    reader.onerror = function (error) {
+      cb(error, null)
+    }
+},
+
+
+
+
   isEmail: function isEmail(email)
   {
-    var emailformat = /^[a-z0-9]+(\.[_a-z0-9]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,15})$/;
-    return emailformat.test(email);
-  }*/
+    let isValidEmail =
+      /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return isValidEmail.test(email);
+  },
+
+  reloadPage: function reloadPage()
+  {
+
+    setTimeout(function(){
+      window.location.reload(false);
+    }, 3000);
+
+  }
 }
 
 

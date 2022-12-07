@@ -1,8 +1,9 @@
 .card{
     border-radius: $border-radius-base;
-    background-color: $white-color;
+    background-color: white;
     margin-bottom: 30px;
     border:none !important;
+
 
     .card-image{
         width: 100%;
@@ -257,33 +258,14 @@
 
 .folder{
    cursor: pointer;
-   background: rgba(209, 212, 219, .16) 0% 0% no-repeat padding-box;
-   width: 100%;
-   height: 150px;
-   border-radius: 10px;
+  // background: rgba(209, 212, 219, .16) 0% 0% no-repeat padding-box;
+   //width: 100%;
+   //height: 150px;
+  // border-radius: 10px;
     margin:1em;
-   //folder label
-   &:before {
-     width: 40%;
-     height: 25px;
-     border-radius: 5px;
-     content: '';
-     background: rgba(209, 212, 219, .16) 0% 0% no-repeat padding-box;
-     position: absolute;
-     top: -10px;
-     left: 0px;
-   }
-   //front side of the folder
-   &:after {
-     display: block;
-     width: 200px;
-     height: 150px;
-     border-radius: 10px;
-     content: '';
-     transform: skew(0deg);
-     background: rgba(209, 212, 219, .16) 0% 0% no-repeat padding-box;
-     transition: all .2s;
-   }
+    width: 300px;
+    height: 300px;
+
 
 
  }

@@ -78,7 +78,6 @@ class ChangePassword extends Component {
       axios
         .post(url_api, send)
         .then((response) => {
-          console.log(response.data);
           if (response.data.status) {
             setTimeout(() => {
               this.setState({
@@ -122,7 +121,7 @@ class ChangePassword extends Component {
   goBack = () => {
     window.location.href = '/recovery';
   }
-
+  //renderiza la vista de cabiar contraseña (input contraseña, confirmar contraseña y correo)
   render() {
     return (
       <div className="global-container m-0 vh-100 row justify-content-center align-items-center">
@@ -130,7 +129,7 @@ class ChangePassword extends Component {
           <div className="card-body">
           <div>
             <a onClick={this.goBack}>
-              <i class="fas fa-angle-left blue-text-login"></i>
+              <i className="fas fa-angle-left blue-text-login"></i>
               <span className="blue-text-login">Volver</span>
             </a>
             </div>
@@ -147,7 +146,7 @@ class ChangePassword extends Component {
               <div>
               </div>
               {this.state.error === true &&
-                <div class={this.state.color} role="alert">
+                <div className={this.state.color} role="alert">
                   {this.state.errorMsg}
                 </div>
               }
@@ -166,6 +165,7 @@ class ChangePassword extends Component {
                       aria-describedby="emailHelp"
                       placeholder="nombre@ejemplo.com"
                       onChange={this.getInputData.bind(this)}
+                      maxLength={200}
                     />
                   </div>
                   <div className="form-group">
@@ -180,6 +180,7 @@ class ChangePassword extends Component {
                       aria-describedby="passwordHelp"
                       placeholder="*********"
                       onChange={this.getInputData.bind(this)}
+                      maxLength={200}
                     />
                   </div>
                   <div className="form-group">
@@ -194,6 +195,7 @@ class ChangePassword extends Component {
                       aria-describedby="confirm_passwordHelp"
                       placeholder="*********"
                       onChange={this.getInputData.bind(this)}
+                      maxLength={200}
                     />
                   </div>
                   <div className="d-flex justify-content-center">
@@ -213,7 +215,7 @@ class ChangePassword extends Component {
                         id="action-btn"
                         className="btn btn-primary btn-block background-button-recovery col-sm-12 col-md-12 col-xs-12 w-100"
                       >
-                        <div class="lds-dual-ring"></div>
+                        <div className="lds-dual-ring"></div>
                       </button>
                     }
                   </div>

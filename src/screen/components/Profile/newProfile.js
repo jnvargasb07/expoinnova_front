@@ -1,16 +1,23 @@
-import React, { Component, useState } from "react";
+import React, { Component } from "react";
 
 // react-bootstrap components
-import { Card, Container, Row, Col, Modal, Table } from "react-bootstrap";
+import { Card, Container, Row, Col, Modal } from "react-bootstrap";
 import AppUtil from "../../../AppUtil/AppUtil.js";
 import "moment-timezone";
 import { url } from "../services/api";
 import crypto from "crypto-js";
 
+import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
+import paginationFactory from 'react-bootstrap-table2-paginator';
+import BootstrapTable from 'react-bootstrap-table-next';
+
+
+// Clase para la creacion de los distintos usuarios
 class NewProfile extends Component {
   state = {
     user: "",
     form: {
+      id: 0,
       name: "",
       email: "",
       campus_id: 0,
@@ -27,7 +34,7 @@ class NewProfile extends Component {
       name: "",
       email: "",
       password: "",
-      business_name: "",
+      role:""
     },
     show: false,
     showDelete: false,
@@ -35,7 +42,7 @@ class NewProfile extends Component {
     showProfessor: false,
     showAdmin: false,
     showCampus: false,
-    showCategories: false,
+
     valid_email: true,
     spinner: false,
     charging: false,
@@ -44,17 +51,45 @@ class NewProfile extends Component {
     professors: [],
     students: [],
     judges: [],
-    categories: [],
+
+    profiles:[],
     nameProfessor: "",
     campus_id: 0,
     campus_name: "",
-    category_name: "",
+
     add: [],
+    updating: false,
+    role:""
   };
 
   constructor(props) {
     super(props);
   }
+
+  validateToken = () => {
+    let decodedToken = sessionStorage.getItem("expire_tkn");
+    let exp = parseFloat(decodedToken);
+    let dateNow = new Date();
+    if (decodedToken != null) {
+      if (exp * 1000 < dateNow.getTime()) {
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("user");
+        sessionStorage.setItem("expired", true);
+        window.location.replace("/");
+      }
+  }
+}
+//# obtiene datos del estudiante, para posterior actualizacion
+getUpdateStudent = (student) => {
+this.setState({ updating: true});
+
+  document.getElementById("id").value = student.id;
+  document.getElementById("id_users").value = student.users.id;
+  document.getElementById("name").value = student.users.name;
+  document.getElementById("email").value = student.users.email;
+  document.getElementById("campusid").value = student.campuses.id;
+  document.getElementById("professorsusersid").value = student.professor_users.id;
+};
 
   //se obtiene el usuario
   getUserData = async () => {
@@ -64,6 +99,14 @@ class NewProfile extends Component {
     );
     this.user = JSON.parse(bytes.toString(crypto.enc.Utf8));
     this.nameUser = this.user.name.charAt(0).toUpperCase();
+
+    this.setState({
+      role: this.user.roles[0].name,
+    });
+
+    if(this.user.roles[0].name == "Students" || this.user.roles[0].name == "Judges"){
+      window.location.replace("/home");
+    }
   };
 
   //se obtiene la info de los inputs
@@ -76,7 +119,17 @@ class NewProfile extends Component {
     });
     this.validateEmail(e);
   };
-
+  // obtiene los inputs para la data de administradores
+  getInputDataAdmin = async (e) => {
+    await this.setState({
+      formAdmin: {
+        ...this.state.formAdmin,
+        [e.target.name]: e.target.value,
+      },
+    });
+    this.validateEmail(e);
+  };
+    // obtiene los inputs para la data de jurados
   getInputDataJudge = async (e) => {
     await this.setState({
       formJudge: {
@@ -86,7 +139,7 @@ class NewProfile extends Component {
     });
     this.validateEmail(e);
   };
-
+  // obtiene los inputs para la data de otros formulariso (sedes)
   getInputDataOthers = async (e) => {
     await this.setState({
       ...this.state,
@@ -107,24 +160,14 @@ class NewProfile extends Component {
     });
   };
 
-  //se obtiene la lista de categorias
-  getCategoriesData = () => {
-    let url_api = url + "categories";
-    AppUtil.getAPI(url_api).then((response) => {
-      if (response.data.length > 0) {
-        this.setState({
-          categories: response.data,
-          charging: true
-        });
-      }
-    });
-  };
 
   //se obtiene la lista de profesores
   getProfessorData = () => {
     let url_api = url + "professor_users";
     AppUtil.getAPI(url_api).then((response) => {
+
       if (response.data.length > 0) {
+        this.getCampusData();
         this.setState({
           professors: response.data,
           charging: true
@@ -143,6 +186,8 @@ class NewProfile extends Component {
           students: response.data,
           charging: true
         });
+        this.getProfessorData();
+        this.getCampusData();
       }
     });
   };
@@ -170,17 +215,20 @@ class NewProfile extends Component {
     document.getElementById("business_name").value = "";
     document.getElementById("nameProfessor").value = "";
     document.getElementById("campus_name").value = "";
-    document.getElementById("category_name").value = "";
+
   };
 
   //se guarda el estudiante
   saveStudent = () => {
+
+    this.validateToken();
+    let {students, form} = this.state;
     if (
-      this.state.form.name == "" ||
-      this.state.form.email == "" ||
-      this.state.form.password == "" ||
-      this.state.form.campus_id == 0 ||
-      this.state.form.professors_users_id == 0
+      form.name == "" ||
+      (form.email == "" || !AppUtil.isEmail(form.email )) ||
+      form.password == "" ||
+      form.campus_id == 0 ||
+      form.professors_users_id == 0
     ) {
       this.setState({
         error: true,
@@ -200,12 +248,35 @@ class NewProfile extends Component {
     if (!this.validatePassword(this.state.form.password)) {
       return;
     }
+
+
+    for (var i = 0; i < students.length; i++)
+    {
+      if (students[i].users.email != null)
+      {
+        if (form.email === students[i].users.email)
+        {
+          this.setState({
+            error: true,
+            errorMsg:"El correo relacionado a este estudiante ya esta registrado",
+            color: "alert alert-warning",
+          });
+
+          this.setState({alert});
+
+          return ;
+          break;
+        }
+      }
+    }
+
+
     this.setState({
       spinner: true,
     });
     let url_api = url + "students";
     AppUtil.postAPI(url_api, this.state.form).then((response) => {
-      console.log(response);
+
       if (response.success) {
         this.setState({
           error: true,
@@ -220,6 +291,7 @@ class NewProfile extends Component {
             spinner: false,
           });
         }, "2000");
+        this.getStudentsData();
         this.clearFields();
       } else {
         this.setState({
@@ -241,11 +313,13 @@ class NewProfile extends Component {
 
   //se guarda el jurado
   saveJudge = () => {
+    this.validateToken();
+      let {formJudge, judges} = this.state;
     if (
-      this.state.formJudge.name == "" ||
-      this.state.formJudge.email == "" ||
-      this.state.formJudge.business_name == "" ||
-      this.state.formJudge.password == ""
+      formJudge.name == "" ||
+      (formJudge.email == "" || !AppUtil.isEmail(formJudge.email )) ||
+      formJudge.business_name == "" ||
+      formJudge.password == ""
     ) {
       this.setState({
         error: true,
@@ -262,7 +336,28 @@ class NewProfile extends Component {
       }, "2000");
       return;
     }
-    if (!this.validatePassword(this.state.form.password)) {
+
+    for (var i = 0; i < judges.length; i++)
+    {
+      if (judges[i].users.email != null)
+      {
+        if (formJudge.email === judges[i].users.email)
+        {
+          this.setState({
+            error: true,
+            errorMsg:"El correo relacionado a este jurado ya existe",
+            color: "alert alert-warning",
+          });
+
+          this.setState({alert});
+
+          return ;
+          break;
+        }
+      }
+    }
+
+    if (!this.validatePassword(formJudge.password)) {
       return;
     }
     this.setState({
@@ -271,6 +366,7 @@ class NewProfile extends Component {
     let url_api = url + "judges";
     AppUtil.postAPI(url_api, this.state.formJudge).then((response) => {
       if (response.success) {
+        this.getJudgesData();
         this.setState({
           error: true,
           errorMsg: "El jurado se guardo exitosamente",
@@ -281,9 +377,13 @@ class NewProfile extends Component {
             error: false,
             errorMsg: "",
             color: "",
-            spinner: false,
+            spinner: false
           });
         }, "2000");
+        document.getElementById('name').value = "";
+        document.getElementById('email').value = "";
+        document.getElementById('business_name').value = "";
+        document.getElementById('password').value = "";
       } else {
         this.setState({
           error: true,
@@ -304,6 +404,7 @@ class NewProfile extends Component {
 
   //se guarda el profesor
   saveProfessor = () => {
+    this.validateToken();
     let url_api = url + "professor_users";
     let professor_data = "";
     if (this.state.nameProfessor != "" && this.state.campus_id != "") {
@@ -320,6 +421,28 @@ class NewProfile extends Component {
       });
       return;
     }
+    let {professors} = this.state;
+    for (var i = 0; i < professors.length; i++)
+    {
+      if (professors[i].name != null)
+      {
+        if (professor_data.name === professors[i].name)
+        {
+          this.setState({
+            error: true,
+            errorMsg:"No se puede crear un profesor que ya existe",
+            color: "alert alert-warning",
+          });
+
+          this.setState({alert});
+
+          return ;
+          break;
+        }
+      }
+    }
+
+
     this.setState({
       spinner: true,
     });
@@ -330,6 +453,7 @@ class NewProfile extends Component {
           error: true,
           errorMsg: "El profesor se guardo exitosamente",
           color: "alert alert-success",
+          nameProfessor:""
         });
         setTimeout(() => {
           this.setState({
@@ -362,6 +486,7 @@ class NewProfile extends Component {
 
   //se guarda el campus
   saveCampus = () => {
+    this.validateToken();
     let url_api = url + "campuses";
     let campuses_data = "";
     if (this.state.campus_name != "") {
@@ -377,6 +502,30 @@ class NewProfile extends Component {
       });
       return;
     }
+
+    let {options } = this.state;
+    for (var i = 0; i < options.length; i++)
+    {
+      if (options[i].name != null)
+      {
+        if (campuses_data.name === options[i].name)
+        {
+          this.setState({
+            error: true,
+            errorMsg:"No se puede crear una sede que ya existe",
+            color: "alert alert-warning",
+          });
+
+          this.setState({alert});
+
+          return ;
+          break;
+        }
+      }
+    }
+
+
+
     this.setState({
       spinner: true,
     });
@@ -387,6 +536,7 @@ class NewProfile extends Component {
           error: true,
           errorMsg: "La sede se guardo exitosamente",
           color: "alert alert-success",
+          campus_name:""
         });
         setTimeout(() => {
           this.setState({
@@ -396,6 +546,7 @@ class NewProfile extends Component {
             spinner: false,
           });
         }, "2000");
+        document.getElementById('campus_name').value = '';
       } else {
         this.setState({
           error: true,
@@ -417,45 +568,88 @@ class NewProfile extends Component {
     });
   };
 
-  //se guarda la categoria
-  saveCategories = () => {
-    let url_api = url + "categories";
-    let categories_data = "";
-    if (this.state.category_name != "") {
-      categories_data = {
-        name: this.state.category_name,
-      };
-    } else {
+  //se obtiene la lista de administradores
+  getAdminData = async () => {
+    let data = [];
+    let responseA = await AppUtil.getAPI(url + "users/role/admins")
+      let arrayA = responseA.data
+      if (arrayA) {
+        for (let i = 0; i < arrayA.length; i++) {
+
+          data.push(arrayA[i]);
+        }
+      }
+    let responseB = await AppUtil.getAPI(url + "users/role/super-admins")
+      if (responseB) {
+        let arraySA = responseB.data;
+        for (let i = 0; i < arraySA.length; i++) {
+
+          data.push(arraySA[i]);
+        }
+      }
+
+    await this.setState({
+      charging: true,
+      profiles:data
+    });
+  };
+
+    //carga la informacion del administrador a actualizar
+    getUpdateAdmin = (admin) => {
       this.setState({
-        error: true,
-        errorMsg: "Todos los campos son requeridos",
-        color: "alert alert-danger",
+        updating: true
       });
-      return;
+      document.getElementById("id").value = admin.id;
+      document.getElementById("name").value = admin.name;
+      document.getElementById("email").value = admin.email;
+      document.getElementById("role").value = admin.rol[0];
+    };
+
+
+  //se guarda el admin
+  saveAdmin = () => {
+    this.validateToken();
+    let url_api = url + "users";
+    let campuses_data = "";
+    if (this.state.formAdmin.name == "" &&
+        (this.state.formAdmin.email == "" || !AppUtil.isEmail(this.state.form.email ) )&&
+        this.state.formAdmin.password == "" &&
+        this.state.formAdmin.role == "") {
+          this.setState({
+            error: true,
+            errorMsg: "Todos los campos son requeridos",
+            color: "alert alert-danger",
+            spinner: false,
+          });
+          return;
     }
     this.setState({
       spinner: true,
     });
-    AppUtil.postAPI(url_api, categories_data).then((response) => {
+    AppUtil.postAPI(url_api, this.state.formAdmin).then((response) => {
       if (response.success) {
-        this.getCategoriesData();
+        this.getAdminData();
         this.setState({
           error: true,
-          errorMsg: "La categoría se guardo exitosamente",
+          errorMsg: "Datos guardados exitosamente",
           color: "alert alert-success",
         });
+        document.getElementById("name").value = "";
+        document.getElementById("email").value = "";
+        document.getElementById("password").value = "";
+        document.getElementById("role").value = "";
         setTimeout(() => {
           this.setState({
             error: false,
             errorMsg: "",
             color: "",
-            spinner: false,
+            spinner: false
           });
         }, "2000");
       } else {
         this.setState({
           error: true,
-          errorMsg: "Hubo un problema al guardar la categoría",
+          errorMsg: "Hubo un problema al guardar los datos",
           color: "alert alert-danger",
         });
         setTimeout(() => {
@@ -474,10 +668,138 @@ class NewProfile extends Component {
   };
 
   //elimina el profesor seleccionado
-  deleteProfessor = (id) => {
-    let url_api = url + "professor_users/" + id;
+  deleteAdmin = (id) => {
+    this.validateToken();
+    let url_api = url + "users/" + id;
     AppUtil.deleteAPI(url_api).then((response) => {
       if (response.success) {
+        this.getAdminData();
+        this.setState({
+          error: true,
+          errorMsg: "El usuario se elimino exitosamente",
+          color: "alert alert-success",
+        });
+        setTimeout(() => {
+          this.setState({
+            error: false,
+            errorMsg: "",
+            color: "",
+          });
+        }, "2000");
+      } else {
+        this.setState({
+          error: true,
+          errorMsg: "Hubo un problema al eliminar el usuario",
+          color: "alert alert-danger",
+        });
+        setTimeout(() => {
+          this.setState({
+            error: false,
+            errorMsg: "",
+            color: "",
+          });
+        }, "2000");
+      }
+    });
+  };
+
+
+  updateAdmin = () => {
+    this.validateToken();
+    this.setState({
+      spinner: true
+    });
+    let form = {};
+    let id = document.getElementById("id").value;
+    if(document.getElementById("password").value == ''){
+      form = {
+        "name": document.getElementById("name").value,
+        "email": document.getElementById("email").value,
+        "role": document.getElementById("role").value,
+      }
+    }else{
+      form = {
+        "name": document.getElementById("name").value,
+        "email": document.getElementById("email").value,
+        "password": document.getElementById("password").value,
+        "role": document.getElementById("role").value,
+      }
+    }
+
+    AppUtil.putAPI(url + 'users/' + id, form).then((response) => {
+      if (response.success) {
+        document.getElementById("id").value = 0;
+        document.getElementById("name").value = "";
+        document.getElementById("email").value = "";
+        document.getElementById("role").value = 0;
+        this.getAdminData();
+        this.setState({
+          error: true,
+          errorMsg: "El usuario se actualizo exitosamente",
+          color: "alert alert-success",
+        });
+        setTimeout(() => {
+          this.setState({
+            error: false,
+            errorMsg: "",
+            color: "",
+            spinner: true,
+            updating: false
+          });
+        }, "2000");
+      } else {
+        this.setState({
+          error: true,
+          errorMsg: "Hubo un problema al actualizar el usuario",
+          color: "alert alert-danger",
+        });
+        setTimeout(() => {
+          this.setState({
+            error: false,
+            errorMsg: "",
+            color: "",
+            spinner: false,
+            updating: false
+          });
+        }, "2000");
+      }
+    });
+
+  }
+
+  //elimina el profesor seleccionado
+  deleteProfessor = (id) => {
+    this.validateToken();
+    let url_api = url + "professor_users/" + id;
+    this.setState({charging: false})
+    AppUtil.deleteAPI(url_api).then((response) => {
+      this.setState({charging: true})
+      if (response.success)
+      {
+        if (response.message == "Profesor no se puede eliminar, esta ligado a ideas o campus")
+        {
+          let listaIdeas = '<ul>';
+          for (var i = 0; i < response.data.length; i++)
+          {
+            listaIdeas += `<li>Idea asignada: ${response.data[i].name} </li>`;
+          }
+          listaIdeas += '</ul>'
+
+          this.setState({
+            error: true,
+            errorMsg: `<div>${response.message} <br/> ${listaIdeas}</div>`,
+            color: "alert alert-warning",
+          });
+          setTimeout(() => {
+            this.setState({
+              error: false,
+              errorMsg: "",
+              color: "",
+            });
+          }, "6000");
+          return;
+        }
+
         this.getProfessorData();
         this.setState({
           error: true,
@@ -510,9 +832,39 @@ class NewProfile extends Component {
 
   //elimina el campus seleccionado
   deleteCampus = (id) => {
+    this.validateToken();
     let url_api = url + "campuses/" + id;
+    this.setState({charging: false})
     AppUtil.deleteAPI(url_api).then((response) => {
-      if (response.success) {
+      this.setState({charging: true})
+      if (response.success)
+      {
+        if (response.message == "Campus no se puede eliminar, esta ligado a ideas o profesor")
+        {
+          let listaIdeas = '<ul>';
+          for (var i = 0; i < response.data.length; i++)
+          {
+            listaIdeas += `<li>Idea asignada: ${response.data[i].name} </li>`;
+          }
+          listaIdeas += '</ul>'
+
+          this.setState({
+            error: true,
+            errorMsg: `<div>${response.message} <br/> ${listaIdeas}</div>`,
+            color: "alert alert-warning",
+          });
+          setTimeout(() => {
+            this.setState({
+              error: false,
+              errorMsg: "",
+              color: "",
+            });
+          }, "6000");
+          return;
+        }
+
+
+
         this.getCampusData();
         this.setState({
           error: true,
@@ -543,81 +895,108 @@ class NewProfile extends Component {
     });
   };
 
-  //elimina la categoria seleccionado
-  deleteCategory = (id) => {
-    let url_api = url + "categories/" + id;
-    AppUtil.deleteAPI(url_api).then((response) => {
-      if (response.success) {
-        this.getCategoriesData();
-        this.setState({
-          error: true,
-          errorMsg: "La categoría se elimino exitosamente",
-          color: "alert alert-success",
-        });
-        setTimeout(() => {
-          this.setState({
-            error: false,
-            errorMsg: "",
-            color: "",
-          });
-        }, "2000");
-      } else {
-        this.setState({
-          error: true,
-          errorMsg: "Hubo un problema al eliminar la categoría",
-          color: "alert alert-danger",
-        });
-        setTimeout(() => {
-          this.setState({
-            error: false,
-            errorMsg: "",
-            color: "",
-          });
-        }, "2000");
-      }
-    });
-  };
-
   //elimina el estudiante seleccionado
   deleteStudent = (id) => {
-    let url_api = url + "students/" + id;
-    AppUtil.deleteAPI(url_api).then((response) => {
-      if (response.success) {
-        this.getStudentsData();
-        this.setState({
-          error: true,
-          errorMsg: "El estudiante se elimino exitosamente",
-          color: "alert alert-success",
-        });
-        setTimeout(() => {
+
+
+      this.validateToken();
+      this.setState({charging: false})
+      let url_api = url + "students/" + id;
+      AppUtil.deleteAPI(url_api).then((response) => {
+        this.setState({charging: true})
+        if (response.success) {
+
+
+          if (response.message == "Estudiante no se puede eliminar, esta ligado a ideas o ferias")
+          {
+            let listaIdeas = '<ul>';
+            for (var i = 0; i < response.data.length; i++)
+            {
+              listaIdeas += `<li>Idea asignada: ${response.data[i].name}</li>`;
+            }
+            listaIdeas += '</ul>'
+
+            this.setState({
+              error: true,
+              errorMsg: `<div>${response.message} <br/> ${listaIdeas}</div>`,
+              color: "alert alert-warning",
+            });
+            setTimeout(() => {
+              this.setState({
+                error: false,
+                errorMsg: "",
+                color: "",
+              });
+            }, "6000");
+            return;
+          }
+
+
+          this.getStudentsData();
           this.setState({
-            error: false,
-            errorMsg: "",
-            color: "",
+            error: true,
+            errorMsg: "El estudiante se elimino exitosamente",
+            color: "alert alert-success",
           });
-        }, "2000");
-      } else {
-        this.setState({
-          error: true,
-          errorMsg: "Hubo un problema al eliminar el estudiante",
-          color: "alert alert-danger",
-        });
-        setTimeout(() => {
+          setTimeout(() => {
+            this.setState({
+              error: false,
+              errorMsg: "",
+              color: "",
+            });
+          }, "2000");
+        } else {
           this.setState({
-            error: false,
-            errorMsg: "",
-            color: "",
+            error: true,
+            errorMsg: "Hubo un problema al eliminar el estudiante",
+            color: "alert alert-danger",
           });
-        }, "2000");
-      }
-    });
+          setTimeout(() => {
+            this.setState({
+              error: false,
+              errorMsg: "",
+              color: "",
+            });
+          }, "2000");
+        }
+      });
   };
 
   //elimina el estudiante seleccionado
   deleteJudge = (id) => {
+    this.validateToken();
     let url_api = url + "judges/" + id;
+    this.setState({charging: false})
     AppUtil.deleteAPI(url_api).then((response) => {
-      if (response.success) {
+      this.setState({charging: true})
+      if (response.success)
+      {
+        if (response.message === "Juez no se puede eliminar, esta ligado a ferias")
+        {
+          let listaIdeas = '<ul>';
+          for (var i = 0; i < response.data.length; i++)
+          {
+            listaIdeas += `<li>Feria asignada: ${response.data[i].fairs.name} </li>`;
+          }
+          listaIdeas += '</ul>'
+
+          this.setState({
+            error: true,
+            errorMsg: `<div>${response.message} <br/> ${listaIdeas}</div>`,
+            color: "alert alert-warning",
+          });
+          setTimeout(() => {
+            this.setState({
+              error: false,
+              errorMsg: "",
+              color: "",
+            });
+          }, "6000");
+
+            return ;
+        }
+
+
         this.getJudgesData();
         this.setState({
           error: true,
@@ -649,7 +1028,7 @@ class NewProfile extends Component {
   };
 
   validateEmail = (e) => {
-    if (e.target.type === "email") {
+    if (e.target.type == "email") {
       let isValidEmail =
         /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
       if (!isValidEmail.test(e.target.value)) {
@@ -684,12 +1063,307 @@ class NewProfile extends Component {
     return true;
   };
 
+
+  //carga la informacion del profesor a actualizar
+  getUpdateProfessor = (professor) => {
+    this.setState({
+      updating: true
+    });
+    document.getElementById("id").value = professor.id;
+    document.getElementById("nameProfessor").value = professor.name;
+    document.getElementById("campus_id").value = professor.campus.id;
+  };
+
+  updateProfessor = () => {
+    this.validateToken();
+    this.setState({
+      spinner: true
+    });
+    let id = document.getElementById("id").value;
+    let form = {
+      "campus_id": document.getElementById("campus_id").value,
+      "name": document.getElementById("nameProfessor").value
+    }
+    AppUtil.putAPI(url + 'professor_users/' + id, form).then((response) => {
+      if (response.success) {
+        document.getElementById("id").value = 0;
+        document.getElementById("nameProfessor").value = "";
+        document.getElementById("campus_id").value = 0;
+        this.getProfessorData();
+        this.setState({
+          error: true,
+          errorMsg: "El profesor se actualizo exitosamente",
+          color: "alert alert-success",
+          updating: false
+        });
+        setTimeout(() => {
+          this.setState({
+            error: false,
+            errorMsg: "",
+            color: "",
+            spinner: false,
+            updating: false
+          });
+        }, "2000");
+      } else {
+        this.setState({
+          error: true,
+          errorMsg: "Hubo un problema al actualizar el profesor",
+          color: "alert alert-danger",
+        });
+        setTimeout(() => {
+          this.setState({
+            error: false,
+            errorMsg: "",
+            color: "",
+            spinner: false,
+            updating: false
+          });
+        }, "2000");
+      }
+    });
+
+  }
+
+
+  //carga la informacion del campus a actualizar
+  getUpdateCampus = (campus) => {
+    this.setState({
+      updating: true
+    });
+    document.getElementById("id").value = campus.id;
+    document.getElementById("campus_name").value = campus.name;
+  };
+
+  updateCampus = () => {
+    this.validateToken();
+    this.setState({
+      spinner: true
+    });
+    let id = document.getElementById("id").value;
+    let form = {
+      "name": document.getElementById("campus_name").value
+    }
+    AppUtil.putAPI(url + 'campuses/' + id, form).then((response) => {
+      if (response.success) {
+        document.getElementById("id").value = 0;
+        document.getElementById("campus_name").value = "";
+        this.getCampusData();
+        this.setState({
+          error: true,
+          errorMsg: "La sede se actualizo exitosamente",
+          color: "alert alert-success",
+          updating: false
+        });
+        setTimeout(() => {
+          this.setState({
+            error: false,
+            errorMsg: "",
+            color: "",
+            spinner: false,
+            updating: false
+          });
+        }, "2000");
+      } else {
+        this.setState({
+          error: true,
+          errorMsg: "Hubo un problema al actualizar la sede",
+          color: "alert alert-danger",
+        });
+        setTimeout(() => {
+          this.setState({
+            error: false,
+            errorMsg: "",
+            color: "",
+            spinner: false,
+            updating: false
+          });
+        }, "2000");
+      }
+    });
+
+  }
+
+    //carga la informacion del juez a actualizar
+    getUpdateJudge = (judge) => {
+      this.setState({
+        updating: true
+      });
+
+      document.getElementById("id").value = judge.id;
+      document.getElementById("id_users").value = judge.users.id;
+      document.getElementById("name").value = judge.users.name;
+      document.getElementById("email").value = judge.users.email;
+      document.getElementById("business_name").value = judge.business_name;
+    };
+
+    updateJudges = () => {
+      this.validateToken();
+      this.setState({
+        spinner: true
+      });
+      let id = document.getElementById("id").value;
+      let form = "";
+      if(document.getElementById("password").value == ""){
+        form = {
+          "id": document.getElementById("id").value,
+          "users_id": document.getElementById("id_users").value,
+          "business_name": document.getElementById("business_name").value,
+          "name": document.getElementById("name").value,
+          "email": document.getElementById("email").value
+        }
+      }else{
+        form = {
+          "id": document.getElementById("id").value,
+          "users_id": document.getElementById("id_users").value,
+          "business_name": document.getElementById("business_name").value,
+          "name": document.getElementById("name").value,
+          "email": document.getElementById("email").value,
+          "password": document.getElementById("password").value
+        }
+      }
+
+      AppUtil.putAPI(url + 'judges/' + id, form).then((response) => {
+        if (response.success) {
+          document.getElementById("id").value = "";
+          document.getElementById("id_users").value = "";
+          document.getElementById("name").value = "";
+          document.getElementById("email").value = "";
+          document.getElementById("business_name").value = "";
+          document.getElementById("password").value = "";
+          this.getJudgesData();
+          this.setState({
+            error: true,
+            errorMsg: "El juez se actualizo exitosamente",
+            color: "alert alert-success",
+            updating: false
+          });
+          setTimeout(() => {
+            this.setState({
+              error: false,
+              errorMsg: "",
+              color: "",
+              spinner: false,
+              updating: false
+            });
+          }, "2000");
+        } else {
+          this.setState({
+            error: true,
+            errorMsg: "Hubo un problema al actualizar el juez",
+            color: "alert alert-danger",
+          });
+          setTimeout(() => {
+            this.setState({
+              error: false,
+              errorMsg: "",
+              color: "",
+              spinner: false,
+              updating: false
+            });
+          }, "2000");
+        }
+      });
+
+    }
+
+
+  //carga la informacion del estudiante a actualizar
+    getUpdateStudent = (student) => {
+      this.setState({
+        updating: true
+      });
+
+      document.getElementById("id").value = student.id;
+      document.getElementById("id_users").value = student.users.id;
+      document.getElementById("name").value = student.users.name;
+      document.getElementById("email").value = student.users.email;
+      document.getElementById("campus_id").value = student.campuses.id;
+      document.getElementById("professors_users_id").value = student.professor_users.id;
+    };
+
+    //actualiza el estudiante enviando el formulario
+  updateStudents = () => {
+    this.validateToken();
+    this.setState({
+      spinner: true
+    });
+    let id = document.getElementById("id").value;
+    let form = "";
+    if(document.getElementById("password").value == ""){
+      form = {
+        "id": document.getElementById("id").value,
+        "users_id": document.getElementById("id_users").value,
+        "campus_id": document.getElementById("campus_id").value,
+        "professors_users_id": document.getElementById("professors_users_id").value,
+        "name": document.getElementById("name").value,
+        "email": document.getElementById("email").value
+      }
+    }else{
+      form = {
+        "id": document.getElementById("id").value,
+        "users_id": document.getElementById("id_users").value,
+        "campus_id": document.getElementById("campus_id").value,
+        "professors_users_id": document.getElementById("professors_users_id").value,
+        "name": document.getElementById("name").value,
+        "email": document.getElementById("email").value,
+        "password": document.getElementById("password").value
+      }
+    }
+
+    AppUtil.putAPI(url + 'students/' + id, form).then((response) => {
+      if (response.success) {
+        document.getElementById("id").value = "";
+        document.getElementById("id_users").value = "";
+        document.getElementById("name").value = "";
+        document.getElementById("email").value = "";
+        document.getElementById("campus_id").value = "";
+        document.getElementById("professors_users_id").value = "";
+        document.getElementById("password").value = "";
+        this.getStudentsData();
+        this.setState({
+          error: true,
+          errorMsg: "El estudiante se actualizo exitosamente",
+          color: "alert alert-success",
+          updating: false
+        });
+        setTimeout(() => {
+          this.setState({
+            error: false,
+            errorMsg: "",
+            color: "",
+            spinner: false,
+            updating: false
+          });
+        }, "2000");
+      } else {
+        this.setState({
+          error: true,
+          errorMsg: "Hubo un problema al actualizar el estudiante",
+          color: "alert alert-danger",
+        });
+        setTimeout(() => {
+          this.setState({
+            error: false,
+            errorMsg: "",
+            color: "",
+            spinner: false,
+            updating: false
+          });
+        }, "2000");
+      }
+    });
+
+  }
+
+
   toggleStudent = () => {
     this.setState({
       showStudent: !this.state.showStudent,
       error: false,
       valid_email: true,
-      charging: false
+      charging: false,
+      updating:false
     });
     this.getStudentsData();
   };
@@ -698,7 +1372,8 @@ class NewProfile extends Component {
       showJudge: !this.state.showJudge,
       error: false,
       valid_email: true,
-      charging: false
+      charging: false,
+      updating:false
     });
     this.getJudgesData();
   };
@@ -707,40 +1382,101 @@ class NewProfile extends Component {
       showProfessor: !this.state.showProfessor,
       error: false,
       valid_email: true,
-      charging: false
+      charging: false,
+      updating:false
     });
+    this.getProfessorData();
   };
   toggleAdmin = () => {
     this.setState({
       showAdmin: !this.state.showAdmin,
       error: false,
       valid_email: true,
-      charging: false
+      charging: false,
+      updating:false
     });
+    this.getAdminData();
   };
   toggleCampus = () => {
     this.setState({
       showCampus: !this.state.showCampus,
       error: false,
       valid_email: true,
-      charging: false
+      charging: false,
+      updating:false
     });
+    this.getCampusData();
   };
-  toggleCategories = () => {
-    this.setState({
-      showCategories: !this.state.showCategories,
-      error: false,
-      valid_email: true,
-      charging: false
-    });
-    this.getCategoriesData();
-  };
+
 
   componentWillMount() {
     this.getUserData();
-    this.getProfessorData();
-    this.getCampusData();
   }
+
+  renderStudentEdit = (cell, row, rowIndex, formatExtraData) => (
+     <a onClick={() => this.getUpdateStudent(row)} className="txt-blue decoration-none">
+       {cell}
+     </a>
+   );
+
+   renderStudentDelete = (cell, row, rowIndex, formatExtraData) => (
+     <a onClick={() => this.deleteStudent(cell)}  className="txt-blue decoration-none" >
+       Eliminar X
+     </a>
+    );
+
+    renderJudgeEdit = (cell, row, rowIndex, formatExtraData) => (
+      <a onClick={() => this.getUpdateJudge(row)} className="txt-blue decoration-none">
+        {cell}
+      </a>
+    );
+
+    //borrar jurado
+    renderJudgeDelete = (cell, row, rowIndex, formatExtraData) => (
+      <a onClick={() => this.deleteJudge(cell)}  className="txt-blue decoration-none" >
+        Eliminar X
+      </a>
+     );
+
+     renderProfessorEdit = (cell, row, rowIndex, formatExtraData) => (
+        <a onClick={() => this.getUpdateProfessor(row)} className="txt-blue decoration-none">
+          {cell}
+        </a>
+      );
+
+      renderProfessorDelete = (cell, row, rowIndex, formatExtraData) => (
+        <a onClick={() => this.deleteProfessor(cell)}  className="txt-blue decoration-none" >
+          Eliminar X
+        </a>
+       );
+
+
+       renderOptionEdit = (cell, row, rowIndex, formatExtraData) => (
+          <a onClick={() => this.getUpdateCampus(row)} className="txt-blue decoration-none">
+            {cell}
+          </a>
+        );
+
+        renderOptionDelete = (cell, row, rowIndex, formatExtraData) => (
+          <a onClick={() => this.deleteCampus(cell)}  className="txt-blue decoration-none" >
+            Eliminar X
+          </a>
+         );
+
+
+           renderProfileDelete = (cell, row, rowIndex, formatExtraData) => (
+            <a onClick={() => this.deleteAdmin(cell)}  className="txt-blue decoration-none" >
+              Eliminar X
+            </a>
+           );
+
+           renderProfileEdit = (cell, row, rowIndex, formatExtraData) => (
+            <a onClick={() => this.getUpdateAdmin(row)} className="txt-blue decoration-none">
+              {cell}
+            </a>
+          );
+
+
 
   render() {
     let {
@@ -750,14 +1486,42 @@ class NewProfile extends Component {
       showProfessor,
       showAdmin,
       showCampus,
-      showCategories,
       post,
       key,
     } = this.state;
 
+    const columnsStudents= [
+      {dataField: 'users.name', text:'Nombre', formatter: this.renderStudentEdit  },
+      {dataField: 'id', text:'Eliminar',  formatter: this.renderStudentDelete }
+    ];
+
+    const columnsJudges= [
+      {dataField: 'users.name', text:'Nombre', formatter: this.renderJudgeEdit },
+      {dataField: 'id', text:'Eliminar',  formatter: this.renderJudgeDelete }
+    ];
+
+    const columnsProfessors= [
+      {dataField: 'name', text:'Nombre', formatter:this.renderProfessorEdit  },
+      {dataField: 'id', text:'Eliminar',  formatter: this.renderProfessorDelete  }
+    ];
+
+    const columnsOptions= [
+      {dataField: 'name', text:'Nombre', formatter:this.renderOptionEdit  },
+      {dataField: 'id', text:'Eliminar',  formatter: this.renderOptionDelete  }
+    ];
+
+
+    const columnsProfiles= [
+      {dataField: 'name', text:'Nombre', formatter:this.renderProfileEdit  },
+      {dataField: 'rol[0]', text:'Rol', formatter:this.renderProfileEdit  },
+      {dataField: 'id', text:'Eliminar',  formatter: this.renderProfileDelete  }
+    ];
+
     return (
       <>
         <Container fluid>
+          <input id="id" name="id" className="here"></input>
+          <input id="id_users" name="id_users" className="here"></input>
           <Row>
             <Col lg="12" sm="12">
               <Card className="card-stats">
@@ -800,7 +1564,7 @@ class NewProfile extends Component {
                       </div>
                     </a>
                   </Col>
-                  <Col lg="6" sm="6" xs="12">
+                  {this.state.role === "SuperAdmin" && <Col lg="6" sm="6" xs="12">
                     <a onClick={this.toggleAdmin}>
                       <div className="text-center p-1">
                         <p className="new-profile-text text-color-recovery">
@@ -808,7 +1572,7 @@ class NewProfile extends Component {
                         </p>
                       </div>
                     </a>
-                  </Col>
+                  </Col>}
                   <Col lg="6" sm="6" xs="12">
                     <a onClick={this.toggleCampus}>
                       <div className="text-center p-1">
@@ -818,15 +1582,7 @@ class NewProfile extends Component {
                       </div>
                     </a>
                   </Col>
-                  <Col lg="6" sm="6" xs="12">
-                    <a onClick={this.toggleCategories}>
-                      <div className="text-center p-1">
-                        <p className="new-profile-text text-color-recovery">
-                          Categorias
-                        </p>
-                      </div>
-                    </a>
-                  </Col>
+
                 </Row>
               </Card>
             </Col>
@@ -839,35 +1595,15 @@ class NewProfile extends Component {
               </Modal.Title>
             </Modal.Header>
             <Modal.Body className="show-grid">
-              {this.state.error === true && (
-                <div className={this.state.color} role="alert">
-                  {this.state.errorMsg}
-                </div>
+              {this.state.error && (
+                <div className={this.state.color} role="alert" dangerouslySetInnerHTML={{__html: this.state.errorMsg}}></div>
               )}
               <Container>
                 <Row className="p-1">
                   <p>Otros estudiantes</p>
-                  {this.state.charging && 
-                  <Table hover>
-                    <tbody>
-                      {this.state.students.map((student) => (
-                        <tr>
-                          <td className="txt-blue">{student.users.name}</td>
-                          <td className="text-center">
-                            <a
-                              onClick={() => this.deleteStudent(student.id)}
-                              className="txt-blue decoration-none"
-                            >
-                              Eliminar X
-                            </a>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                  }
-                  {!this.state.charging && 
-                    <div className="d-flex justify-content-center"><div class="lds-dual-ring-2"></div></div>
+                  {this.state.charging && <BootstrapTable keyField='id' data={this.state.students} columns={ columnsStudents } pagination={ paginationFactory({sizePerPage: 5, hideSizePerPage:false}) } />}
+                  {!this.state.charging &&
+                    <div className="d-flex justify-content-center"><div className="lds-dual-ring-2"></div></div>
                   }
                 </Row>
                 <Row className="p-1">
@@ -883,6 +1619,7 @@ class NewProfile extends Component {
                         name="name"
                         aria-describedby="nameHelp"
                         onChange={this.getInputData}
+                        maxLength={200}
                       />
                     </div>
                   </Col>
@@ -901,6 +1638,7 @@ class NewProfile extends Component {
                         name="email"
                         aria-describedby="emailHelp"
                         onChange={this.getInputData}
+                        maxLength={200}
                       />
                       {!this.state.valid_email && (
                         <small className="text-danger">
@@ -974,6 +1712,7 @@ class NewProfile extends Component {
                         name="password"
                         aria-describedby="passwordHelp"
                         onChange={this.getInputData}
+                        maxLength={200}
                       />
                     </div>
                   </Col>
@@ -982,6 +1721,8 @@ class NewProfile extends Component {
             </Modal.Body>
             <Modal.Footer className="d-flex justify-content-center">
               {!this.state.spinner && (
+                <div>
+                {!this.state.updating && (
                 <button
                   size="lg"
                   type="submit"
@@ -990,6 +1731,18 @@ class NewProfile extends Component {
                 >
                   Crear Nuevo
                 </button>
+                  )}
+                {this.state.updating && (
+                <button
+                  size="lg"
+                  type="submit"
+                  onClick={this.updateStudents}
+                  className="bg-blue btn-lg btn-rounded txt-white-btn"
+                >
+                  Actualizar
+                </button>
+                  )}
+                </div>
               )}
               {this.state.spinner && (
                 <button
@@ -997,7 +1750,7 @@ class NewProfile extends Component {
                   type="submit"
                   className="bg-blue btn-lg btn-rounded txt-white-btn"
                 >
-                  <div class="lds-dual-ring"></div>
+                  <div className="lds-dual-ring"></div>
                 </button>
               )}
             </Modal.Footer>
@@ -1009,36 +1762,16 @@ class NewProfile extends Component {
                 Nuevo Jurado
               </Modal.Title>
             </Modal.Header>
-            {this.state.error === true && (
-              <div className={this.state.color} role="alert">
-                {this.state.errorMsg}
-              </div>
+            {this.state.error && (
+              <div className={this.state.color} role="alert" dangerouslySetInnerHTML={{__html: this.state.errorMsg}}></div>
             )}
             <Modal.Body className="show-grid">
               <Container>
                 <Row className="p-1">
                   <p>Otros jurados</p>
-                  {this.state.charging && 
-                  <Table hover>
-                    <tbody>
-                      {this.state.judges.map((judge) => (
-                        <tr>
-                          <td className="txt-blue">{judge.users.name}</td>
-                          <td className="text-center">
-                            <a
-                              onClick={() => this.deleteJudge(judge.id)}
-                              className="txt-blue decoration-none"
-                            >
-                              Eliminar X
-                            </a>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                  }
-                  {!this.state.charging && 
-                    <div className="d-flex justify-content-center"><div class="lds-dual-ring-2"></div></div>
+                  {this.state.charging && <BootstrapTable keyField='id' data={this.state.judges} columns={ columnsJudges } pagination={ paginationFactory({sizePerPage: 5}) } /> }
+                  {!this.state.charging &&
+                    <div className="d-flex justify-content-center"><div className="lds-dual-ring-2"></div></div>
                   }
                 </Row>
                 <Row className="p-1">
@@ -1054,6 +1787,7 @@ class NewProfile extends Component {
                         name="name"
                         aria-describedby="nameHelp"
                         onChange={this.getInputDataJudge}
+                        maxLength={200}
                       />
                     </div>
                   </Col>
@@ -1071,6 +1805,7 @@ class NewProfile extends Component {
                         id="email"
                         name="email"
                         aria-describedby="emailHelp"
+                        maxLength={200}
                         onChange={this.getInputDataJudge}
                       />
                       {!this.state.valid_email && (
@@ -1095,6 +1830,7 @@ class NewProfile extends Component {
                         name="business_name"
                         aria-describedby="business_nameHelp"
                         onChange={this.getInputDataJudge}
+                        maxLength={200}
                       />
                     </div>
                   </Col>
@@ -1113,6 +1849,7 @@ class NewProfile extends Component {
                         name="password"
                         aria-describedby="passwordHelp"
                         onChange={this.getInputDataJudge}
+                        maxLength={200}
                       />
                     </div>
                   </Col>
@@ -1121,6 +1858,8 @@ class NewProfile extends Component {
             </Modal.Body>
             <Modal.Footer className="d-flex justify-content-center">
               {!this.state.spinner && (
+                <div>
+                  {!this.state.updating && (
                 <button
                   size="lg"
                   type="submit"
@@ -1129,6 +1868,18 @@ class NewProfile extends Component {
                 >
                   Crear Nuevo
                 </button>
+                  )}
+                {this.state.updating && (
+                <button
+                  size="lg"
+                  type="submit"
+                  onClick={this.updateJudges}
+                  className="bg-blue btn-lg btn-rounded txt-white-btn"
+                >
+                  Actualizar
+                </button>
+                  )}
+                </div>
               )}
               {this.state.spinner && (
                 <button
@@ -1136,7 +1887,7 @@ class NewProfile extends Component {
                   type="submit"
                   className="bg-blue btn-lg btn-rounded txt-white-btn"
                 >
-                  <div class="lds-dual-ring"></div>
+                  <div className="lds-dual-ring"></div>
                 </button>
               )}
             </Modal.Footer>
@@ -1148,37 +1899,15 @@ class NewProfile extends Component {
                 Nuevo Profesor
               </Modal.Title>
             </Modal.Header>
-            {this.state.error === true && (
-              <div className={this.state.color} role="alert">
-                {this.state.errorMsg}
-              </div>
+            {this.state.error == true && (
+              <div className={this.state.color} role="alert" dangerouslySetInnerHTML={{__html: this.state.errorMsg}}></div>
             )}
             <Modal.Body className="show-grid">
               <Container>
                 <Row className="p-1">
                   <p>Otros profesores</p>
-                  {this.state.charging && 
-                  <Table hover>
-                    <tbody>
-                      {this.state.professors.map((professor) => (
-                        <tr>
-                          <td className="txt-blue">{professor.name}</td>
-                          <td className="text-center">
-                            <a
-                              onClick={() => this.deleteProfessor(professor.id)}
-                              className="txt-blue decoration-none"
-                            >
-                              Eliminar X
-                            </a>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                  }
-                  {!this.state.charging && 
-                    <div className="d-flex justify-content-center"><div class="lds-dual-ring-2"></div></div>
-                  }
+                  {this.state.charging && <BootstrapTable keyField='id' data={this.state.professors} columns={ columnsProfessors } pagination={ paginationFactory({sizePerPage: 5}) } /> }
+                  {!this.state.charging && <div className="d-flex justify-content-center"><div className="lds-dual-ring-2"></div></div> }
                 </Row>
                 <hr></hr>
                 <Row className="p-1">
@@ -1197,6 +1926,7 @@ class NewProfile extends Component {
                         name="nameProfessor"
                         aria-describedby="nameProfessorHelp"
                         onChange={this.getInputDataOthers}
+
                       />
                     </div>
                   </Col>
@@ -1230,14 +1960,29 @@ class NewProfile extends Component {
             </Modal.Body>
             <Modal.Footer className="d-flex justify-content-center">
               {!this.state.spinner && (
-                <button
-                  size="lg"
-                  type="submit"
-                  onClick={this.saveProfessor}
-                  className="bg-blue btn-lg btn-rounded txt-white-btn"
-                >
-                  Crear Nuevo
-                </button>
+                <div>
+                  {!this.state.updating && (
+                    <button
+                      size="lg"
+                      type="submit"
+                      onClick={this.saveProfessor}
+                      className="bg-blue btn-lg btn-rounded txt-white-btn"
+                    >
+                      Crear Nuevo
+                    </button>
+                  )}
+                  {this.state.updating && (
+                    <button
+                      size="lg"
+                      type="submit"
+                      onClick={this.updateProfessor}
+                      className="bg-blue btn-lg btn-rounded txt-white-btn"
+                    >
+                      Actualizar
+                    </button>
+                  )}
+                </div>
+
               )}
               {this.state.spinner && (
                 <button
@@ -1245,7 +1990,7 @@ class NewProfile extends Component {
                   type="submit"
                   className="bg-blue btn-lg btn-rounded txt-white-btn"
                 >
-                  <div class="lds-dual-ring"></div>
+                  <div className="lds-dual-ring"></div>
                 </button>
               )}
             </Modal.Footer>
@@ -1257,13 +2002,20 @@ class NewProfile extends Component {
                 Nuevo Administrador
               </Modal.Title>
             </Modal.Header>
-            {this.state.error === true && (
+            {this.state.error == true && (
               <div className={this.state.color} role="alert">
                 {this.state.errorMsg}
               </div>
             )}
             <Modal.Body className="show-grid">
               <Container>
+              <Row className="p-1">
+                  <p>Otros Administradores</p>
+                  {this.state.charging && <BootstrapTable keyField='id' data={this.state.profiles} columns={ columnsProfiles } pagination={ paginationFactory({sizePerPage: 5}) } /> }
+                  {!this.state.charging &&
+                    <div className="d-flex justify-content-center"><div className="lds-dual-ring-2"></div></div>
+                  }
+                </Row>
                 <Row className="p-1">
                   <Col xs={12} md={12}>
                     <div className="form-group">
@@ -1276,7 +2028,8 @@ class NewProfile extends Component {
                         id="name"
                         name="name"
                         aria-describedby="nameHelp"
-                        onChange={this.getInputData}
+                        onChange={this.getInputDataAdmin}
+                        maxLength={200}
                       />
                     </div>
                   </Col>
@@ -1294,28 +2047,11 @@ class NewProfile extends Component {
                         id="email"
                         name="email"
                         aria-describedby="emailHelp"
-                        onChange={this.getInputData}
+                        onChange={this.getInputDataAdmin}
+                        maxLength={200}
                       />
                     </div>
                   </Col>
-                  <Col xs={12} md={12} xl={6}>
-                    <div className="form-group">
-                      <label htmlFor="company" className="text-color-recovery">
-                        Sede / Empresa Otros
-                      </label>
-                      <input
-                        type="text"
-                        className="form-control form-control-sm input-field"
-                        id="company_admin"
-                        name="company_admin"
-                        aria-describedby="companyHelp"
-                        onChange={this.getInputData}
-                      />
-                    </div>
-                  </Col>
-                </Row>
-
-                <Row className="p-1">
                   <Col xs={12} md={12} xl={6}>
                     <div className="form-group">
                       <label htmlFor="password" className="text-color-recovery">
@@ -1327,23 +2063,65 @@ class NewProfile extends Component {
                         id="password"
                         name="password"
                         aria-describedby="passwordHelp"
-                        onChange={this.getInputData}
+                        onChange={this.getInputDataAdmin}
+                        maxLength={200}
                       />
+                    </div>
+                  </Col>
+                </Row>
+
+                <Row className="p-1">
+                  <Col xs={12} md={12} xl={6}>
+                    <div className="form-group">
+                      <label
+                        htmlFor="role"
+                        className="text-color-recovery"
+                      >
+                        Rol
+                      </label>
+                      <select
+                        type="text"
+                        className="form-control form-control-sm input-field"
+                        id="role"
+                        name="role"
+                        aria-describedby="roleHelp"
+                        onChange={this.getInputDataAdmin}
+                      >
+                        <option value="0" selected>
+                          Seleccione un rol
+                        </option>
+                          <option value="SuperAdmin">Super Administrador</option>
+                          <option value="Admin">Administrador</option>
+                      </select>
                     </div>
                   </Col>
                 </Row>
               </Container>
             </Modal.Body>
             <Modal.Footer className="d-flex justify-content-center">
-              {!this.state.spinner && (
-                <button
-                  size="lg"
-                  type="submit"
-                  onClick={this.saveAdmin}
-                  className="bg-blue btn-lg btn-rounded txt-white-btn"
-                >
-                  Crear Nuevo
-                </button>
+            {!this.state.spinner && (
+                <div>
+                  {!this.state.updating && (
+                    <button
+                      size="lg"
+                      type="submit"
+                      onClick={this.saveAdmin}
+                      className="bg-blue btn-lg btn-rounded txt-white-btn"
+                    >
+                      Crear Nuevo
+                    </button>
+                  )}
+                  {this.state.updating && (
+                    <button
+                      size="lg"
+                      type="submit"
+                      onClick={this.updateAdmin}
+                      className="bg-blue btn-lg btn-rounded txt-white-btn"
+                    >
+                      Actualizar
+                    </button>
+                  )}
+                </div>
               )}
               {this.state.spinner && (
                 <button
@@ -1351,7 +2129,7 @@ class NewProfile extends Component {
                   type="submit"
                   className="bg-blue btn-lg btn-rounded txt-white-btn"
                 >
-                  <div class="lds-dual-ring"></div>
+                  <div className="lds-dual-ring"></div>
                 </button>
               )}
             </Modal.Footer>
@@ -1363,36 +2141,16 @@ class NewProfile extends Component {
                 Nueva Sede
               </Modal.Title>
             </Modal.Header>
-            {this.state.error === true && (
-              <div className={this.state.color} role="alert">
-                {this.state.errorMsg}
-              </div>
+            {this.state.error == true && (
+              <div className={this.state.color} role="alert" dangerouslySetInnerHTML={{__html: this.state.errorMsg}}></div>
             )}
             <Modal.Body className="show-grid">
               <Container>
                 <Row className="p-1">
                   <p>Otras sedes</p>
-                  {this.state.charging && 
-                  <Table hover>
-                    <tbody>
-                      {this.state.options.map((option) => (
-                        <tr>
-                          <td className="text-blue">{option.name}</td>
-                          <td className="text-center">
-                            <a
-                              onClick={() => this.deleteCampus(option.id)}
-                              className="txt-blue decoration-none"
-                            >
-                              Eliminar X
-                            </a>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                  }
-                  {!this.state.charging && 
-                    <div className="d-flex justify-content-center"><div class="lds-dual-ring-2"></div></div>
+                  {this.state.charging && <BootstrapTable keyField='id' data={this.state.options} columns={ columnsOptions } pagination={ paginationFactory({sizePerPage: 5}) } /> }
+                  {!this.state.charging &&
+                    <div className="d-flex justify-content-center"><div className="lds-dual-ring-2"></div></div>
                   }
                 </Row>
                 <Row className="p-1">
@@ -1411,6 +2169,7 @@ class NewProfile extends Component {
                         name="campus_name"
                         aria-describedby="campus_nameHelp"
                         onChange={this.getInputDataOthers}
+                        maxLength={200}
                       />
                     </div>
                   </Col>
@@ -1419,14 +2178,28 @@ class NewProfile extends Component {
             </Modal.Body>
             <Modal.Footer className="d-flex justify-content-center">
               {!this.state.spinner && (
-                <button
-                  size="lg"
-                  type="submit"
-                  onClick={this.saveCampus}
-                  className="bg-blue btn-lg btn-rounded txt-white-btn"
-                >
-                  Crear Nuevo
-                </button>
+                <div>
+                  {!this.state.updating && (
+                    <button
+                      size="lg"
+                      type="submit"
+                      onClick={this.saveCampus}
+                      className="bg-blue btn-lg btn-rounded txt-white-btn"
+                    >
+                      Crear Nuevo
+                    </button>
+                  )}
+                  {this.state.updating && (
+                    <button
+                      size="lg"
+                      type="submit"
+                      onClick={this.updateCampus}
+                      className="bg-blue btn-lg btn-rounded txt-white-btn"
+                    >
+                      Actualizar
+                    </button>
+                  )}
+                </div>
               )}
               {this.state.spinner && (
                 <button
@@ -1434,94 +2207,12 @@ class NewProfile extends Component {
                   type="submit"
                   className="bg-blue btn-lg btn-rounded txt-white-btn"
                 >
-                  <div class="lds-dual-ring"></div>
+                  <div className="lds-dual-ring"></div>
                 </button>
               )}
             </Modal.Footer>
           </Modal>
 
-          <Modal show={showCategories} onHide={this.toggleCategories} size="lg">
-            <Modal.Header closeButton>
-              <Modal.Title className="txt-blue text-center">
-                Nueva Categoría
-              </Modal.Title>
-            </Modal.Header>
-            {this.state.error === true && (
-              <div className={this.state.color} role="alert">
-                {this.state.errorMsg}
-              </div>
-            )}
-            <Modal.Body className="show-grid">
-              <Container>
-                <Row className="p-1">
-                  <p>Otras categorias</p>
-                  {this.state.charging && 
-                  <Table hover>
-                    <tbody>
-                      {this.state.categories.map((category) => (
-                        <tr>
-                          <td className="text-blue">{category.name}</td>
-                          <td className="text-center">
-                            <a
-                              onClick={() => this.deleteCategory(category.id)}
-                              className="txt-blue decoration-none"
-                            >
-                              Eliminar X
-                            </a>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                  }
-                  {!this.state.charging && 
-                    <div className="d-flex justify-content-center"><div class="lds-dual-ring-2"></div></div>
-                  }
-                </Row>
-                <Row className="p-1">
-                  <Col xs={12} md={12}>
-                    <div className="form-group">
-                      <label
-                        htmlFor="category_name"
-                        className="text-color-recovery"
-                      >
-                        Nombre Nueva Categoria
-                      </label>
-                      <input
-                        type="text"
-                        className="form-control form-control-sm input-field"
-                        id="category_name"
-                        name="category_name"
-                        aria-describedby="category_nameHelp"
-                        onChange={this.getInputDataOthers}
-                      />
-                    </div>
-                  </Col>
-                </Row>
-              </Container>
-            </Modal.Body>
-            <Modal.Footer className="d-flex justify-content-center">
-              {!this.state.spinner && (
-                <button
-                  size="lg"
-                  type="submit"
-                  onClick={this.saveCategories}
-                  className="bg-blue btn-lg btn-rounded txt-white-btn"
-                >
-                  Crear Nuevo
-                </button>
-              )}
-              {this.state.spinner && (
-                <button
-                  size="lg"
-                  type="submit"
-                  className="bg-blue btn-lg btn-rounded txt-white-btn"
-                >
-                  <div class="lds-dual-ring"></div>
-                </button>
-              )}
-            </Modal.Footer>
-          </Modal>
         </Container>
       </>
     );
