@@ -871,7 +871,7 @@ class NewProfile extends Component {
                   }
                 </Row>
                 <Row className="p-1">
-                  <Col xs={12} md={12}>
+                  <Col xs={12} md={12} xl={12}>
                     <div className="form-group">
                       <label htmlFor="name" className="text-color-recovery">
                         Nombre Completo
@@ -889,7 +889,7 @@ class NewProfile extends Component {
                 </Row>
 
                 <Row className="p-1">
-                  <Col xs={12} md={6}>
+                  <Col xs={12} md={12} xl={6}>
                     <div className="form-group">
                       <label htmlFor="email" className="text-color-recovery">
                         Correo electrónico
@@ -909,7 +909,7 @@ class NewProfile extends Component {
                       )}
                     </div>
                   </Col>
-                  <Col xs={12} md={6}>
+                  <Col xs={12} md={12} xl={6}>
                     <div className="form-group">
                       <label
                         htmlFor="campus_id"
@@ -937,7 +937,7 @@ class NewProfile extends Component {
                 </Row>
 
                 <Row className="p-1">
-                  <Col xs={12} md={6}>
+                  <Col xs={12} md={12} xl={6}>
                     <div className="form-group">
                       <label
                         htmlFor="professors_users_id"
@@ -962,7 +962,7 @@ class NewProfile extends Component {
                       </select>
                     </div>
                   </Col>
-                  <Col xs={12} md={6}>
+                  <Col xs={12} md={12} xl={6}>
                     <div className="form-group">
                       <label htmlFor="password" className="text-color-recovery">
                         Contraseña
@@ -1060,7 +1060,7 @@ class NewProfile extends Component {
                 </Row>
 
                 <Row className="p-1">
-                  <Col xs={12} md={6}>
+                  <Col xs={12} md={12} xl={6}>
                     <div className="form-group">
                       <label htmlFor="email" className="text-color-recovery">
                         Correo electrónico
@@ -1080,7 +1080,7 @@ class NewProfile extends Component {
                       )}
                     </div>
                   </Col>
-                  <Col xs={12} md={6}>
+                  <Col xs={12} md={12} xl={6}>
                     <div className="form-group">
                       <label
                         htmlFor="business_name"
@@ -1101,7 +1101,7 @@ class NewProfile extends Component {
                 </Row>
 
                 <Row className="p-1">
-                  <Col xs={12} md={6}>
+                  <Col xs={12} md={12} xl={6}>
                     <div className="form-group">
                       <label htmlFor="password" className="text-color-recovery">
                         Contraseña
@@ -1182,7 +1182,7 @@ class NewProfile extends Component {
                 </Row>
                 <hr></hr>
                 <Row className="p-1">
-                  <Col xs={12} md={6}>
+                  <Col xs={12} md={12} xl={6}>
                     <div className="form-group">
                       <label
                         htmlFor="nameProfessor"
@@ -1200,7 +1200,7 @@ class NewProfile extends Component {
                       />
                     </div>
                   </Col>
-                  <Col xs={12} md={6}>
+                  <Col xs={12} md={12} xl={6}>
                     <div className="form-group">
                       <label
                         htmlFor="campus_id"
@@ -1283,7 +1283,7 @@ class NewProfile extends Component {
                 </Row>
 
                 <Row className="p-1">
-                  <Col xs={12} md={6}>
+                  <Col xs={12} md={12} xl={6}>
                     <div className="form-group">
                       <label htmlFor="email" className="text-color-recovery">
                         Correo electrónico
@@ -1298,7 +1298,7 @@ class NewProfile extends Component {
                       />
                     </div>
                   </Col>
-                  <Col xs={12} md={6}>
+                  <Col xs={12} md={12} xl={6}>
                     <div className="form-group">
                       <label htmlFor="company" className="text-color-recovery">
                         Sede / Empresa Otros
@@ -1316,7 +1316,7 @@ class NewProfile extends Component {
                 </Row>
 
                 <Row className="p-1">
-                  <Col xs={12} md={6}>
+                  <Col xs={12} md={12} xl={6}>
                     <div className="form-group">
                       <label htmlFor="password" className="text-color-recovery">
                         Contraseña

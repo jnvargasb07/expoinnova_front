@@ -97,7 +97,7 @@ form{
 }
 
 .bg-gray{
-  background-color: #D1D4DB;
+  background-color: rgba(209, 212, 219, .16) ;
 }
 
 .bg-blue{
@@ -286,3 +286,29 @@ opacity: 1;
   }
 }
 
+.letter-login{
+  background-color: #1E6AAC;
+  color: white;
+  border-radius: 100%;
+
+  width: 50px;
+  text-align: center;
+  margin: 1%;
+  padding: 0%;
+  margin-right: 5%;
+}
+
+a{
+  cursor: pointer;
+}
+
+.hideDesc{
+  overflow: hidden; /* make sure it hides the content that overflows */
+  white-space: nowrap; /* don't break the line */
+  text-overflow: ellipsis; /* give the beautiful '...' effect */
+}
+
+
+.left-action-btn{
+  left: 85% !important;
+}

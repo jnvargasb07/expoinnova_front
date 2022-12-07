@@ -1,9 +1,11 @@
 import React from "react";
-import { Button, Card, Table, Container, Row, Col, Form, Tabs, Tab, Spinner, Modal } from "react-bootstrap";
+import { Button, Card, Table, Container, Row, Col, Form, Tabs, Tab, Spinner, Modal, Dropdown, Nav } from "react-bootstrap";
 import AppUtil from '../../../AppUtil/AppUtil.js';
 import { url, fairDescription, businessIdeas } from "../services/api";
 import moment from "moment";
 import 'moment/locale/es';
+import Toast from '../common/Toast.js';
+
 
 export default class FairDetail extends React.Component
 {
@@ -25,7 +27,15 @@ export default class FairDetail extends React.Component
         professors:[],
         students:[],
         judges:[],
-
+        categories:[],
+        category:false,
+        processing: false,
+        alert:{
+          show:false,
+          variant:'success',
+          title:"",
+          body:""
+        },
         idea:{
           name: "",
           description: "",
@@ -36,8 +46,13 @@ export default class FairDetail extends React.Component
           campus_id: 0,
           students_id: 0,
           fairs_id: 0,
-          evaluations_id: 0
-        }
+          evaluations_id: 0,
+          professor_name:"",
+          campus_name:""
+        },
+        validatedIdea:false,
+        evaluations:[],
+        showDelete:false
       }
   }
 
@@ -48,14 +63,30 @@ export default class FairDetail extends React.Component
     this.setState({key});
     switch (key)
     {
-      case 'businessIdeas':
-        AppUtil.getAPI(`${url}${businessIdeas}`, sessionStorage.getItem('token')).then(response => {
+      case 'businessIdeas': // obtiene las ideas
+        this._fetchIdeas();
+
+        AppUtil.getAPI(`${url}students`, sessionStorage.getItem('token')).then(response => {
 
           if (response)
           {
-            this.setState({ideas:response.data});
+            this.setState({students:response.data});
           }
         });
+          AppUtil.getAPI(`${url}judges`, sessionStorage.getItem('token')).then(response => {
+            if (response)
+            {
+              this.setState({judges:response.data});
+            }
+          });
+
+          AppUtil.getAPI(`${url}evaluations`, sessionStorage.getItem('token')).then(response => {
+            if (response)
+            {
+              console.log(response);
+              this.setState({evaluations:response.data});
+            }
+          });
       break;
     }
 
@@ -72,27 +103,23 @@ export default class FairDetail extends React.Component
         this.setState({fairInfo:response.data})
       }
     });
+    AppUtil.getAPI(`${url}categorie_by_fair_id/${this.state.id}`, sessionStorage.getItem('token')).then(response => {
 
-    AppUtil.getAPI(`${url}students`, sessionStorage.getItem('token')).then(response => {
-      if (response)
-      {
-        this.setState({students:response.data})
-      }
+      let category = response ? response.data : false;
+      //console.log(category, category[0].categories.name); //validar con team a ver si estas Category va a ser una array
+      this.setState({category}, () =>{
+        AppUtil.getAPI(`${url}categories`, sessionStorage.getItem('token')).then(response => {
+
+          let categories = response ? response.data : [];
+          this.setState({categories});
+        });
+      });
     });
 
-    AppUtil.getAPI(`${url}judges`, sessionStorage.getItem('token')).then(response => {
-      if (response)
-      {
-        this.setState({judges:response.data})
-      }
-    });
 
-    AppUtil.getAPI(`${url}professor_users`, sessionStorage.getItem('token')).then(response => {
-      if (response)
-      {
-        this.setState({professors:response.data})
-      }
-    });
+
+
+
 
 
   }
@@ -106,6 +133,59 @@ export default class FairDetail extends React.Component
     });
   }
 
+  submitEditFair = () =>{
+    this.setState({processing: true});
+    let {fairInfo, id} = this.state;
+
+    if (fairInfo.name.trim() !== "" && fairInfo.description.trim() !== "" && fairInfo.category.trim() !== "")
+    {
+        AppUtil.putAPI(`${url}fairs/${id}`, fairInfo).then(response => {
+          if (response.success)
+          {
+
+            AppUtil.postAPI(`${url}categorie_fair`, {fairs_id: response.data.id, categories_id:fairInfo.category }).then(responseCatFair => {
+
+              if (responseCatFair.success)
+              {
+                let alert = {
+                  show:true,
+                  variant:'success',
+                  title:"Feria creada",
+                  body:"Feria de negocio y categoría creada satisfactoriamente"
+                }
+                this.setState({alert, processing: false}, () => {
+                  this.toggleShow();
+
+                });
+              }
+              else
+              {
+                  let alert = {
+                    show:true,
+                    variant:'warning',
+                    title:"Feria creada",
+                    body:"Feria de negocio categoría creada satisfactoriamente pero no se pudo asignar la categoría"
+                  }
+                  this.setState({alert, processing: false}, () => {
+                    this.toggleShow();
+
+                  });
+
+              }
+            });
+
+            return ;
+          }
+          let alert = {
+            show:true,
+            variant:'danger',
+            title:"Error al crear la feria",
+            body:"No se pudo crear la feria, por favor intente más tarde"
+          }
+        })
+    }
+  }
+
   componentWillMount()
   {
     this._getFairInfo();
@@ -116,7 +196,22 @@ export default class FairDetail extends React.Component
   toggleIdea = () => this.setState({ideaModal: !this.state.ideaModal});
 
 
-  getIdeaData = async (e) => {
+  getInputData = async (e) => {
+
+    await this.setState({
+      fairInfo: {
+        ...this.state.fairInfo,
+        [e.target.name]: e.target.value,
+      },
+    });
+  };
+
+
+  _openFileSelector = () =>{
+
+  }
+
+  getInputIdea = async (e) => {
 
     await this.setState({
       idea: {
@@ -124,15 +219,138 @@ export default class FairDetail extends React.Component
         [e.target.name]: e.target.value,
       },
     });
+
   };
 
+  getIdeaDataSelect = async (e) => {
+
+
+    let info = JSON.parse(e.target.value);
+
+    await this.setState({
+      idea: {
+        ...this.state.idea,
+        students_id: info.id,
+        professor_users_id: info.professor_users.id,
+        professor_name:info.professor_users.name,
+        campus_id: info.campus_id,
+        fairs_id: this.state.id,
+        categories_id: this.state.category[0].id,
+        campus_name:info.campuses.name
+      },
+    });
+
+  };
+
+  _fetchIdeas = () => {
+    AppUtil.getAPI(`${url}${businessIdeas}`, sessionStorage.getItem('token')).then(response => {
+
+      if (response)
+      {
+        this.setState({ideas:response.data});
+      }
+    });
+
+  }
+  SubmitIdeaSteps = (e) =>
+  {
+
+      const form = e.currentTarget;
+      console.log(e);
+      if (form.checkValidity() === false)
+      {
+        e.preventDefault();
+        e.stopPropagation();
+        return ;
+      }
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      switch (this.state.keyideas)
+      {
+        case 'general':
+          this.setState({keyideas:'materials'});
+        break;
+        case 'materials':
+          this.setState({keyideas:'data_idea'});
+        break;
+        case 'data_idea':
+          let {idea} = this.state;
+            AppUtil.postAPI(`${url}ideas`, idea).then(response => {
+              if (response.success)
+              {
+                this.toggleIdea();
+                let alert = {
+                  show:true,
+                  variant:'success',
+                  title:"Idea creada",
+                  body:"La idea fue agregada correctamente"
+                };
+                this._fetchIdeas();
+                this.setState({alert})
+
+                return ;
+              }
+              let alert = {
+                show:true,
+                variant:'danger',
+                title:"Error al crear la idea",
+                body:"No se pudo crear la idea, por favor intente más tarde"
+              }
+              this.setState({alert})
+            });
+            break;
+      }
+  }
+
+    toggleDelete = (id = 0) => this.setState({showDelete: !this.state.showDelete, id});
+    deleteFair = () =>{
+      let {id} = this.state;
+
+      if (id > 0)
+      {
+        this.setState({processing: true})
+        AppUtil.deleteAPI(`${url}ideas/${id}`).then(response => {
+
+          if (response.success)
+          {
+              let alert = {
+                show:true,
+                variant:'success',
+                title:"Idea de negocio eliminada",
+                body:"Idea de negocio eliminada satisfactoriamente"
+              }
+              this.setState({alert, processing: false}, () => {
+                this.toggleDelete();
+                this._fetchIdeas();
+              });
+              return ;
+          }
+
+          let alert = {
+            show:true,
+            variant:'warning',
+            title:"Idea no eliminada",
+            body:"La idea de negocio no se pudo eliminar, por favor intente más tarde"
+          }
+          this.setState({alert, processing: false});
+
+        })
+      }
+    }
   render()
   {
 
-    let {fairInfo, ideas, key, editModal, keymodal, ideaModal, keyideas, students, professors, judges} = this.state;
+    let {fairInfo, ideas, key, editModal, keymodal, ideaModal, keyideas, categories, processing, alert, category, students, idea, judges, validatedIdea,
+      evaluations
+
+    } = this.state;
 
       return (
           <>
+          <Toast onClose={()=> this.setState({alert:{show:false}} )} variant={alert.variant} show={alert.show} title={alert.title} body={alert.body}  />
+
           <Container fluid>
             <Button variant="warning" className="btn-fill btn-rounded" onClick={() => this.props.navigate('/home')}>
               <i className="nc-icon nc-stre-left"></i>
@@ -207,7 +425,7 @@ export default class FairDetail extends React.Component
                         </Col>
                         <Col>
                           <div className="txt-darkblue m-2" id="FechaFinalFeria">
-
+                          {(category && typeof(category[0]) != 'undefined') ? category[0].categories.name : '' }
                           </div>
                         </Col>
                       </Row>
@@ -240,7 +458,16 @@ export default class FairDetail extends React.Component
                     ideas ?
                     (ideas?.map((item,index) =>(
                       <Col xl="5" sm="12" md="12" className="bg-gray p-2 m-1 txt-blue" key={index}>
-                        <a href={`/home/fairdetail/idea/${item.id}`}>
+                      <Dropdown className="left-action-btn" as={Nav.Item} >
+                        <Dropdown.Toggle  as={Nav.Link}   variant="default" >
+                          <i className="fas fa-ellipsis-v"></i>
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu>
+                          <Dropdown.Item href={`/home/fairdetail/idea?id=${item.id}`}><i className="fas fa-edit"></i>Editar</Dropdown.Item>
+                          <Dropdown.Item onClick={()=>this.toggleDelete(item.id)} className="text-danger"><i className="fas fa-trash"></i>Eliminar</Dropdown.Item>
+                        </Dropdown.Menu>
+                      </Dropdown>
+                        <a href={`/home/fairdetail/idea?id=${item.id}`} className="text-decoration-none">
                         <Row>
                           <Col xl="3" sm="2" md="2">
                             <div className="text-align-center">
@@ -248,11 +475,13 @@ export default class FairDetail extends React.Component
                                 <i className="fas fa-briefcase txt-white"></i>
                               </div>
                             </div>
+
                           </Col>
                           <Col xl="8" sm="10" md="10" className="ms-1">
-                            <h3><b>{item.nombre}</b></h3>
-                            <p><i className="fas fa-user"></i>{item.creador}</p>
+                            <h4 className="txt-darkblue"><b>{item.name}</b></h4>
+                            Descripción:<br/> <p className="txt-darkblue hideDesc">{item.description}</p>
                           </Col>
+
                         </Row>
                         </a>
                       </Col>
@@ -273,9 +502,10 @@ export default class FairDetail extends React.Component
                       reverse
                       className="txt-blue"
                       type="switch"
-                      id="foro-preguntas"
+                      id="options_comments"
                       label="Foro de preguntas y respuestas de los diferentes usuarios"
                       checked={fairInfo ? fairInfo.options_comments: false}
+                      onChange={this.getInputData}
                      />
                      </Form.Group>
                    </Col>
@@ -287,9 +517,10 @@ export default class FairDetail extends React.Component
                         reverse
                         className="txt-blue"
                         type="switch"
-                        id="fechas-foro"
+                        id="date_forum"
                         label="Fechas de respuesta de foro"
                         checked={true}
+                        onChange={this.getInputData}
                       />
                       </Form.Group>
                     </Col>
@@ -400,15 +631,16 @@ export default class FairDetail extends React.Component
                 <Row className="m-2">
                   <Col sm="12" xl="12">
                     <label>Nombre de la feria de negocios</label>
-                   <Form.Group>
-                     <Form.Control
-                        placeholder="Nombre de la feria de negocios"
-                        type="text"
-                        value={fairInfo ? fairInfo.name : ""}
-                        name="name"
-                        >
-                       </Form.Control>
-                   </Form.Group>
+                     <Form.Group>
+                       <Form.Control
+                          placeholder="Nombre de la feria de negocios"
+                          type="text"
+                          value={fairInfo ? fairInfo.name : ""}
+                          name="name"
+                          onChange={this.getInputData}
+                          >
+                         </Form.Control>
+                     </Form.Group>
                    </Col>
 
                  </Row>
@@ -416,15 +648,23 @@ export default class FairDetail extends React.Component
                  <Row className="m-2">
                    <Col sm="12" xl="6">
                      <label className="txt-darkblue">Categoría</label>
-                    <Form.Group>
-                      <Form.Control
-                         placeholder="Categoría"
-                         type="text"
-                         value={""}
-                         name="category"
-                         >
-                        </Form.Control>
-                    </Form.Group>
+                     <Form.Group>
+                       <Form.Select aria-label="Categoría" name="category" onChange={this.getInputData}>
+                         <option value="">-- Seleccione una opción --</option>
+                        {categories?.map((item, key) =>{
+                          if (category && typeof(category[0]) != 'undefined')
+                          {
+                            return (category[0].categories_id === item.id ? <option value={item.id} defaultValue key={key}>{item.name}</option> : <option value={item.id} key={key}>{item.name}</option>)
+                          }
+                          else
+                          {
+                            return (<option value={item.id} key={key}>{item.name}</option>);
+                          }
+
+                        }
+                            )}
+                         </Form.Select>
+                     </Form.Group>
                     </Col>
                     <Col sm="12" xl="6">
                       <label className="txt-darkblue">Fecha de inicio</label>
@@ -432,8 +672,9 @@ export default class FairDetail extends React.Component
                          <Form.Control
                            placeholder="Fecha de inicio"
                            type="date"
-                           value={fairInfo ? fairInfo.start_date : ""}
+                           value={fairInfo ? moment(fairInfo.start_date).format('YYYY-MM-DD') : ""}
                            name="start_date"
+                           onChange={this.getInputData}
                            >
                          </Form.Control>
                        </Form.Group>
@@ -446,8 +687,9 @@ export default class FairDetail extends React.Component
                        <Form.Control
                           placeholder="Fecha de fin"
                           type="date"
-                          value={fairInfo ? fairInfo.end_date : ""}
+                          value={fairInfo ? moment(fairInfo.end_date).format('YYYY-MM-DD') : ""}
                           name="end_date"
+                          onChange={this.getInputData}
                           >
                          </Form.Control>
                      </Form.Group>
@@ -465,6 +707,7 @@ export default class FairDetail extends React.Component
                            style={{ height: '100px' }}
                            name="description"
                            value={fairInfo ? fairInfo.description : ""}
+                           onChange={this.getInputData}
                            >
                           </Form.Control>
                       </Form.Group>
@@ -481,6 +724,7 @@ export default class FairDetail extends React.Component
                         id="foro-preguntas"
                         label="Foro de preguntas y respuestas de los diferentes usuarios"
                         value={fairInfo ? fairInfo.options_comments : ""}
+                        onChange={this.getInputData}
                       />
                       </Form.Group>
                     </Col>
@@ -492,6 +736,7 @@ export default class FairDetail extends React.Component
                          type="switch"
                          id="fechas-foro"
                          label="Fechas de respuesta de foro"
+                         onChange={this.getInputData}
                        />
                        </Form.Group>
                      </Col>
@@ -503,7 +748,7 @@ export default class FairDetail extends React.Component
                 <Button className="btn-rounded" variant="light" onClick={this.toggleShow}>
                   Cerrar
                 </Button>
-                <Button className="btn-rounded" className="btn-fill bg-darkblue">Guardar</Button>
+                {processing ? <Spinner animation="grow" variant="primary"  /> : <Button className="btn-rounded" onClick={this.submitEditFair} className="btn-fill bg-darkblue">Guardar</Button>}
               </Modal.Footer>
             </Modal>
 
@@ -523,176 +768,212 @@ export default class FairDetail extends React.Component
               <Tabs
                 id="controlled-tab-example"
                 activeKey={keyideas}
-                //onSelect={(k) => this.setModalKey(k)}
                 className="mb-3 txt-blue"
                 defaultActiveKey="general"
                 >
-               <Tab eventKey="general" title="General" className="txt-darkblue">
-                <Row className="m-2">
-                  <Col sm="12" xl="12">
-                    <label>Coordinador</label>
-                   <Form.Group>
-                     <Form.Select aria-label="Coordinador" type="text" name="coordinator">
-                      {students?.map((item) =>(
-                        <option value={item.id}>{item.id}</option>
-                      ))}
+
+                 <Tab eventKey="general" title="General" className="txt-darkblue">
+                   <Form validated={validatedIdea} onSubmit={this.SubmitIdeaSteps}>
+                    <Row className="m-2">
+                      <Col sm="12" xl="12">
+
+                       <Form.Group controlId="validationCustom01">
+                        <Form.Label>Coordinador</Form.Label>
+                         <Form.Select aria-label="Coordinador" type="text" name="students_id" onChange={this.getIdeaDataSelect} required>
+                         <option value="">-- Seleccione una opción --</option>
+                          {students?.map((item, key) =>(
+                            <option value={JSON.stringify(item)} key={key}>{item.users.name} ({item.users.email})</option>
+                          ))}
+                           </Form.Select>
+                           <Form.Control.Feedback type="invalid">El Coordinador es requerido</Form.Control.Feedback>
+                       </Form.Group>
+                       </Col>
+                     </Row>
+                     <Row className="m-2">
+                       <Col sm="12" xl="6">
+                         <label className="txt-darkblue">Jurado</label>
+                        <Form.Group controlId="validationCustom02">
+                          <Form.Select aria-label="Judges" type="text" name="judge_id" onChange={this.getInputIdea} required>
+                             <option value="">-- Seleccione una opción --</option>
+                            {judges?.map((item, key) =>(
+                              <option value={item.id} key={key}>{item.business_name} </option>
+                            ))}
+                           </Form.Select>
+                           <Form.Control.Feedback type="invalid">El jurado es requerido</Form.Control.Feedback>
+                        </Form.Group>
+                        </Col>
+                        <Col sm="12" xl="6">
+                          <label className="txt-darkblue">Ideas al curso</label>
+                           <Form.Group controlId="validationCustom03">
+                             <Form.Control
+                               placeholder="Ideas al curso"
+                               type="text"
+                               required
+                               >
+                             </Form.Control>
+                           </Form.Group>
+                         </Col>
+                      </Row>
+                      <Col xl="12" sm="12" md="12" className="text-align-center">
+                        <Button className="btn-rounded btn-fill bg-darkblue" type="submit">
+                          Siguiente
+                        </Button>
+                      </Col>
+                      </Form>
+                 </Tab>
+                 <Tab eventKey="materials" title="Materiales">
+                 <Form validated={validatedIdea} onSubmit={this.SubmitIdeaSteps}>
+                   <Row className="m-2">
+                     <Col sm="12" xl="12">
+                       <label>Videos (Insertar enlace de video)</label>
+                      <Form.Group>
+                        <Form.Control
+                           placeholder="Video"
+                           type="url"
+                           name="url_video"
+                           onChange={this.getInputIdea}
+                           required
+                           >
+                          </Form.Control>
+                      </Form.Group>
+                      </Col>
+                    </Row>
+                    <Row className="m-2">
+                      <Col sm="12" xl="12">
+                        <label>Presentaciones (Subir documento)</label>
+                       <Form.Group>
+
+                         <Form.Control
+                            type="file"
+                            name="pdf_resume"
+                            onChange={this.getInputIdea}
+                            required
+                            >
+                           </Form.Control>
+                       </Form.Group>
+                       </Col>
+                     </Row>
+
+                     <Row className="m-2">
+                       <Col sm="12" xl="12">
+                        <Form.Group>
+                         <Form.Label>Evaluación</Form.Label>
+                          <Form.Select aria-label="Coordinador" type="text" name="evaluations_id" onChange={this.getInputIdea} required>
+                          <option value="">-- Seleccione una opción --</option>
+                           {evaluations?.map((item, key) =>(
+                             <option value={item.id} key={key}>{item.tittle}</option>
+                           ))}
+                            </Form.Select>
+                            <Form.Control.Feedback type="invalid">La evaluación es requerido</Form.Control.Feedback>
+                        </Form.Group>
+                        </Col>
+                      </Row>
 
 
-                       </Form.Select>
-                   </Form.Group>
-                   </Col>
-                 </Row>
-                 <Row className="m-2">
-                   <Col sm="12" xl="6">
-                     <label className="txt-darkblue">Jurado</label>
-                    <Form.Group>
-                      <Form.Control
-                         placeholder="Jurado"
-                         type="text"
-                         value={""}
-                         name="judge"
-                         >
-                        </Form.Control>
-                    </Form.Group>
-                    </Col>
-                    <Col sm="12" xl="6">
-                      <label className="txt-darkblue">Ideas al curso</label>
+                     <Row>
+                       <Col xl="6" sm="12" md="12" className="text-align-center">
+                         <Button className="btn-rounded btn-fill bg-darkblue" onClick={() => this.setState({keyideas:'general'})}>
+                           Volver
+                         </Button>
+                       </Col>
+                       <Col xl="6" sm="12" md="12" className="text-align-center">
+                         <Button className="btn-rounded btn-fill bg-darkblue" type="submit">
+                           Siguiente
+                         </Button>
+                       </Col>
+                     </Row>
+                   </Form>
+                 </Tab>
+                 <Tab eventKey="data_idea" title="Datos de la idea">
+                  <Form validated={validatedIdea} onSubmit={this.SubmitIdeaSteps}>
+                   <Row className="m-2">
+                     <Col sm="12" xl="6">
+                       <label>Nombre de la idea</label>
+                      <Form.Group>
+                        <Form.Control
+                           type="text"
+                           name="name"
+                           onChange={this.getInputIdea}
+                           required
+                           >
+                          </Form.Control>
+                      </Form.Group>
+                      </Col>
+                      <Col sm="12" xl="6">
+                        <label>Nombre del profesor</label>
                        <Form.Group>
                          <Form.Control
-                           placeholder="Ideas al curso"
-                           type="text"
-                           name="course_idea"
-                           >
-                         </Form.Control>
+                            type="text"
+                            name="professor_name"
+                            value={idea.professor_name ? idea.professor_name : ""}
+                            readOnly
+                            required
+                            >
+                           </Form.Control>
                        </Form.Group>
-                     </Col>
-                  </Row>
-                  <Col xl="12" sm="12" md="12" className="text-align-center">
-                    <Button className="btn-rounded btn-fill bg-darkblue" onClick={() => this.setState({keyideas:'materials'})}>
-                      Siguiente
-                    </Button>
-                  </Col>
-
-               </Tab>
-               <Tab eventKey="materials" title="Materiales">
-               <Row className="m-2">
-                 <Col sm="12" xl="12">
-                   <label>Videos (Insertar enlace de video)</label>
-                  <Form.Group>
-                    <Form.Control
-                       placeholder="Video"
-                       type="url"
-                       name="video"
-                       >
-                      </Form.Control>
-                  </Form.Group>
-                  </Col>
-                </Row>
-                <Row className="m-2">
-                  <Col sm="12" xl="12">
-                    <label>Presentaciones (Subir documento)</label>
-                   <Form.Group>
-                     <Form.Control
-
-                        type="text"
-                        name="file"
-                        >
-                       </Form.Control>
-                   </Form.Group>
-                   </Col>
-                 </Row>
-
-                 <Row>
-                   <Col xl="6" sm="12" md="12" className="text-align-center">
-                     <Button className="btn-rounded btn-fill bg-darkblue" onClick={() => this.setState({keyideas:'general'})}>
-                       Volver
-                     </Button>
-                   </Col>
-                   <Col xl="6" sm="12" md="12" className="text-align-center">
-                     <Button className="btn-rounded btn-fill bg-darkblue" onClick={() => this.setState({keyideas:'data_idea'})}>
-                       Siguiente
-                     </Button>
-                   </Col>
-                 </Row>
-
-               </Tab>
-               <Tab eventKey="data_idea" title="Datos de la idea">
-                 <Row className="m-2">
-                   <Col sm="12" xl="6">
-                     <label>Nombre de la idea</label>
-                    <Form.Group>
-                      <Form.Control
-                         type="text"
-                         name="idea_name"
-                         >
-                        </Form.Control>
-                    </Form.Group>
-                    </Col>
+                       </Col>
+                    </Row>
+                    <Row className="m-2">
                     <Col sm="12" xl="6">
-                      <label>Nombre del profesor</label>
+                      <label>Sede Universitario</label>
                      <Form.Group>
                        <Form.Control
                           type="text"
-                          name="professor_name"
+                          name="university_name"
+                          readOnly
+                          value={idea.campus_name ? idea.campus_name : ""}
+                          required
                           >
                          </Form.Control>
                      </Form.Group>
                      </Col>
-                  </Row>
-                  <Row className="m-2">
-                  <Col sm="12" xl="6">
-                    <label>Sede Universitario</label>
-                   <Form.Group>
-                     <Form.Control
-                        type="text"
-                        name="university_name"
-                        >
-                       </Form.Control>
-                   </Form.Group>
-                   </Col>
-                   <Col sm="12" xl="6">
-                     <label>Feria que pertenece</label>
-                    <Form.Group>
-                      <Form.Control
-                         type="text"
-                         name="fair_name"
-                         >
-                        </Form.Control>
-                    </Form.Group>
-                    </Col>
-                  </Row>
+                     <Col sm="12" xl="6">
+                       <label>Feria que pertenece</label>
+                      <Form.Group>
+                        <Form.Control
+                           type="text"
+                           name="fair_name"
+                           readOnly
+                           value={fairInfo.name}
+                           required
+                           >
+                          </Form.Control>
+                      </Form.Group>
+                      </Col>
+                    </Row>
 
 
-                  <Row>
-                    <Col sm="12" xl="12">
-                    <label className="txt-darkblue">Descripción de la idea</label>
-                     <Form.Group>
-                       <Form.Control
-                          placeholder="Descripción de la idea"
-                          as="textarea"
-                          style={{ height: '100px' }}
-                          name="idea_description"
-                          value={fairInfo ? fairInfo.description : ""}
-                          >
-                         </Form.Control>
-                     </Form.Group>
-                    </Col>
-                  </Row>
+                    <Row>
+                      <Col sm="12" xl="12">
+                      <label className="txt-darkblue">Descripción de la idea</label>
+                       <Form.Group>
+                         <Form.Control
+                            placeholder="Descripción de la idea"
+                            as="textarea"
+                            style={{ height: '100px' }}
+                            name="description"
+                            onChange={this.getInputIdea}
+                            required
+                            >
+                           </Form.Control>
+                       </Form.Group>
+                      </Col>
+                    </Row>
 
-                  <Row>
-                    <Col xl="6" sm="12" md="12" className="text-align-center">
-                      <Button className="btn-rounded btn-fill bg-darkblue" onClick={() => this.setState({keyideas:'materials'})}>
-                        Volver
-                      </Button>
-                    </Col>
-                    <Col xl="6" sm="12" md="12" className="text-align-center">
-                      <Button className="btn-rounded btn-fill bg-darkblue" onClick={this.SubmitIdea}>
-                        Guardar
-                      </Button>
-                    </Col>
-                  </Row>
-
-               </Tab>
+                    <Row>
+                      <Col xl="6" sm="12" md="12" className="text-align-center">
+                        <Button className="btn-rounded btn-fill bg-darkblue" onClick={() => this.setState({keyideas:'materials'})}>
+                          Volver
+                        </Button>
+                      </Col>
+                      <Col xl="6" sm="12" md="12" className="text-align-center">
+                        <Button type="submit" className="btn-rounded btn-fill bg-darkblue" type="submit">
+                          Guardar
+                        </Button>
+                      </Col>
+                    </Row>
+                    </Form>
+                 </Tab>
 
              </Tabs>
               </Modal.Body>
@@ -705,6 +986,21 @@ export default class FairDetail extends React.Component
               </Modal.Footer>
             </Modal>
 
+            {/*Delete IDEA MODAL*/}
+            <Modal show={this.state.showDelete} onHide={()=> this.toggleDelete(0)}>
+                <Modal.Header closeButton>
+                  <Modal.Title className="txt-blue">Eliminar</Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="text-align-center">¿Desea eliminar esta idea de negocios?</Modal.Body>
+                <Modal.Footer>
+                  <button variant="none" size="lg" onClick={()=> this.toggleDelete(0)} className="bg-darkblue btn-lg btn-rounded txt-white-btn">
+                    Cancelar
+                  </button>
+                  {processing ? <Spinner animation="grow" variant="primary"  />: (<button size="lg" onClick={this.deleteFair} className="bg-blue btn-lg btn-rounded txt-white-btn">
+                    Eliminar
+                  </button>)}
+                </Modal.Footer>
+              </Modal>
 
 
           </Container>

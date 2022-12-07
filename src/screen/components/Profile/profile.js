@@ -72,13 +72,23 @@ class Profile extends Component {
 
     let url_api = url+"users";
     let id = this.user.id;
-    let user = {
-      name:this.state.form.name,
-      email:this.state.form.email,
-      password:this.state.form.password
+    let user;
+    if(this.state.form.password !== ''){
+      user = {
+        name:this.state.form.name,
+        email:this.state.form.email,
+        password:this.state.form.password
+      }
+    }else{
+      user = {
+        name:this.state.form.name,
+        email:this.state.form.email
+      }
     }
 
     AppUtil.putAPI(url_api+'/'+id, user).then(response => {
+      console.log(response);
+      if(response.success){
       this.setState({
        error: true,
        errorMsg: "El usuario se actualizo exitosamente",
@@ -91,6 +101,20 @@ class Profile extends Component {
          color: ""
        });
      }, "4000");
+    }else{
+      this.setState({
+        error: true,
+        errorMsg: "Hubo un problema actualizando el usuario, favor intentelo nuevamente",
+        color: "alert alert-success"
+      });
+      setTimeout(() => {
+        this.setState({
+          error: false,
+          errorMsg: "",
+          color: ""
+        });
+      }, "4000");
+    }
     });
 
   };
@@ -105,6 +129,7 @@ class Profile extends Component {
         <Container fluid>
           <Row>
             <Col lg="12" sm="12">
+
               <Card className="card-stats">
                 <div className="text-center d-flex justify-content-center background-profile">
                   <h1 className="letter-profile-user radius-letter text-white">
